@@ -5,7 +5,7 @@
 - [x] Crear estructura inicial del repositorio.
 - [x] Validar entorno local: dependencias, `pytest`, `ruff` y arranque FastAPI.
 - [x] Revisar y versionar el documento de analisis en una ubicacion estable.
-- [ ] Definir comandos locales de desarrollo y pruebas.
+- [x] Definir comandos locales de desarrollo y pruebas.
 - [ ] Crear scripts locales para dev/test/lint en `scripts/`.
 - [ ] Crear dataset inicial de evaluacion con 20-50 preguntas.
 

@@ -26,6 +26,8 @@ El análisis inicial del producto y la arquitectura está versionado en `docs/an
 
 ## Arranque local previsto
 
+Los comandos de desarrollo, pruebas y lint estan definidos en `docs/desarrollo-local.md`.
+
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
