@@ -38,6 +38,7 @@
 
 ## Fase 4 - Web simple
 
+- [ ] Servir `web/index.html` y assets estaticos desde FastAPI en `/` para desarrollo local.
 - [ ] Conectar chat con backend.
 - [ ] Mostrar fuentes y limites de la respuesta.
 - [ ] Anadir flujo de subida de documento.
@@ -47,5 +48,6 @@
 
 - [ ] Benchmark de modelos Bedrock candidatos.
 - [ ] Pruebas de abstencion y datos faltantes.
+- [ ] Validar la app con navegador integrado; investigar si persiste bloqueo de `localhost`/`127.0.0.1`.
 - [ ] Revision legal/RGPD antes de exponer documentos privados publicamente.
 - [ ] Rate limiting y proteccion basica frente a abuso.
