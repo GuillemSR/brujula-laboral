@@ -1,0 +1,1 @@
+"""Brujula Laboral backend package."""

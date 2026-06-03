@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+credentials.json
+aws_credentials*
+
+# AWS / local tooling
+.aws/
+.sam/
+cdk.out/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Generated or temporary data
+tmp/
+temp/
+logs/
+*.log
+storage/tmp/
+backend/storage/tmp/
+uploads/
+private-documents/
+
+# Local RAG/vector artifacts
+*.faiss
+*.sqlite
+*.sqlite3
+vector_store/
+embeddings_cache/
+
+# Frontend
+node_modules/
+.vite/
+web/dist/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
