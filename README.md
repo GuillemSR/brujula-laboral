@@ -22,6 +22,8 @@ docs/      Arquitectura, AWS, privacidad y notas tecnicas
 TASKS.md   Seguimiento local de tareas
 ```
 
+El análisis inicial del producto y la arquitectura está versionado en `docs/analisis-inicial.md`. El documento fuente original se conserva en `docs/analisis-inicial.docx`.
+
 ## Arranque local previsto
 
 ```powershell
