@@ -3,14 +3,18 @@
 ## Fase 0 - Base del proyecto
 
 - [x] Crear estructura inicial del repositorio.
+- [x] Validar entorno local: dependencias, `pytest`, `ruff` y arranque FastAPI.
 - [ ] Revisar y versionar el documento de analisis en una ubicacion estable.
 - [ ] Definir comandos locales de desarrollo y pruebas.
+- [ ] Crear scripts locales para dev/test/lint en `scripts/`.
 - [ ] Crear dataset inicial de evaluacion con 20-50 preguntas.
 
 ## Fase 1 - Backend y RAG local
 
-- [ ] Implementar endpoint de salud.
+- [x] Implementar endpoint de salud.
 - [ ] Implementar endpoint de consulta sin documento.
+- [ ] Definir esquema de metadatos del corpus RAG.
+- [ ] Crear loader inicial de corpus desde JSON/Markdown.
 - [ ] Crear pipeline inicial de chunking por fuente juridica.
 - [ ] Crear adaptador inicial de embeddings.
 - [ ] Crear busqueda RAG local para prototipo.
@@ -48,6 +52,7 @@
 
 - [ ] Benchmark de modelos Bedrock candidatos.
 - [ ] Pruebas de abstencion y datos faltantes.
+- [ ] Crear checklist de pruebas manuales antes de abrir una beta.
 - [ ] Validar la app con navegador integrado; investigar si persiste bloqueo de `localhost`/`127.0.0.1`.
 - [ ] Revision legal/RGPD antes de exponer documentos privados publicamente.
 - [ ] Rate limiting y proteccion basica frente a abuso.
