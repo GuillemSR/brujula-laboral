@@ -12,7 +12,7 @@
 ## Fase 1 - Backend y RAG local
 
 - [x] Implementar endpoint de salud.
-- [ ] Implementar endpoint de consulta sin documento.
+- [x] Implementar endpoint de consulta sin documento.
 - [ ] Definir esquema de metadatos del corpus RAG.
 - [ ] Crear loader inicial de corpus desde JSON/Markdown.
 - [ ] Crear pipeline inicial de chunking por fuente juridica.
