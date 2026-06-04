@@ -16,7 +16,7 @@
 - [x] Definir esquema de metadatos del corpus RAG.
 - [x] Crear loader inicial de corpus desde JSON/Markdown.
 - [x] Crear pipeline inicial de chunking por fuente juridica.
-- [ ] Crear adaptador inicial de embeddings.
+- [x] Crear adaptador inicial de embeddings.
 - [ ] Crear busqueda RAG local para prototipo.
 - [ ] Generar respuestas con citas.
 
