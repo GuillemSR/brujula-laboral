@@ -6,6 +6,7 @@ Este repositorio desarrolla un asistente laboral y sindical para Espana.
 
 - Mantener el proyecto pequeno, legible y facil de operar por una persona.
 - Preferir un monolito modular antes que microservicios.
+- Antes de analizar, cambiar o crear nada, revisar la documentacion del proyecto y el codigo relevante para mantener el trabajo alineado con el estado real del repositorio.
 - Documentar las decisiones tecnicas en `docs/`.
 - No introducir servicios externos nuevos sin justificar coste, seguridad y mantenimiento.
 - Cuando se trabaje con AWS, usar AWS MCP si esta disponible para validar documentacion, disponibilidad regional, configuracion y estado de servicios.
