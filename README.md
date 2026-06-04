@@ -32,7 +32,7 @@ Los comandos de desarrollo, pruebas y lint estan definidos en `docs/desarrollo-l
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-uvicorn app.main:app --reload --app-dir backend
+.\scripts\dev.ps1
 ```
 
 La configuracion real debe partir de `.env.example`. No se deben commitear credenciales, prompts privados, respuestas de usuarios ni documentos subidos.

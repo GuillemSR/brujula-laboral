@@ -34,7 +34,7 @@ Copy-Item .env.example .env
 Arrancar FastAPI en local:
 
 ```powershell
-uvicorn app.main:app --reload --app-dir backend
+.\scripts\dev.ps1
 ```
 
 Comprobar el endpoint de salud:
@@ -48,13 +48,13 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 Ejecutar la suite de tests:
 
 ```powershell
-pytest
+.\scripts\test.ps1
 ```
 
 Ejecutar solo los tests del backend:
 
 ```powershell
-pytest backend/tests
+.\scripts\test.ps1 backend/tests
 ```
 
 ## Lint y formato
@@ -62,19 +62,19 @@ pytest backend/tests
 Revisar el codigo con Ruff:
 
 ```powershell
-ruff check .
+.\scripts\lint.ps1
 ```
 
 Aplicar formato con Ruff:
 
 ```powershell
-ruff format .
+.\scripts\format.ps1
 ```
 
 Comprobar formato sin modificar archivos:
 
 ```powershell
-ruff format --check .
+.\scripts\format.ps1 --check
 ```
 
 ## Comprobacion rapida antes de subir cambios
@@ -82,9 +82,7 @@ ruff format --check .
 Para cambios de codigo, ejecutar como minimo:
 
 ```powershell
-ruff check .
-ruff format --check .
-pytest
+.\scripts\check.ps1
 ```
 
 Para cambios solo de documentacion, basta con revisar el diff y comprobar que no se han incluido credenciales, documentos privados ni contenido sensible.
