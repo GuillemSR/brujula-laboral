@@ -7,7 +7,7 @@
 - [x] Revisar y versionar el documento de analisis en una ubicacion estable.
 - [x] Definir comandos locales de desarrollo y pruebas.
 - [x] Crear scripts locales para dev/test/lint en `scripts/`.
-- [ ] Crear dataset inicial de evaluacion con 20-50 preguntas.
+- [x] Crear dataset inicial de evaluacion con 20-50 preguntas.
 
 ## Fase 1 - Backend y RAG local
 
