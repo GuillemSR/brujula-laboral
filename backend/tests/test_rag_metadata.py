@@ -102,6 +102,6 @@ def test_chunk_metadata_inherits_citation_fields() -> None:
     chunk = chunks[0]
     assert chunk.chunk_id == "fuente-test:0"
     assert chunk.section == "documento-completo"
-    assert chunk.citation_label == "Fuente test, documento completo"
+    assert chunk.citation_label == "Fuente test, documento-completo"
     assert chunk.metadata.source.source_url.unicode_string() == "https://example.com/fuente"
     assert chunk.metadata.source.legal_rank == "official_guidance"

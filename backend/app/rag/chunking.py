@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from app.rag.metadata import RagChunkMetadata, RagSourceMetadata
@@ -21,30 +22,66 @@ class Chunk:
     metadata: RagChunkMetadata
 
 
-def chunk_document(document: SourceDocument) -> list[Chunk]:
-    """Initial placeholder chunker.
+SECTION_PATTERN = re.compile(
+    r"^(?P<section>(?:#{1,6}\s+.+)|(?:Articulo\s+\d+[^\n]*)|(?:Clausula\s+\d+[^\n]*))$",
+    re.IGNORECASE,
+)
 
-    The real implementation should split legal sources by article, clause or section.
-    """
+
+def _normalize_section(line: str) -> str:
+    section = line.strip().lstrip("#").strip()
+    return re.sub(r"\s+", " ", section)
+
+
+def _split_legal_sections(text: str) -> list[tuple[str, str]]:
+    sections: list[tuple[str, list[str]]] = []
+    current_title = "documento-completo"
+    current_lines: list[str] = []
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if SECTION_PATTERN.match(stripped):
+            if current_lines:
+                sections.append((current_title, current_lines))
+            current_title = _normalize_section(stripped)
+            current_lines = [stripped]
+            continue
+
+        current_lines.append(line)
+
+    if current_lines:
+        sections.append((current_title, current_lines))
+
+    return [
+        (section, "\n".join(lines).strip())
+        for section, lines in sections
+        if "\n".join(lines).strip()
+    ]
+
+
+def chunk_document(document: SourceDocument) -> list[Chunk]:
+    """Split legal Markdown-like sources by headings, articles or clauses."""
     text = document.text.strip()
     if not text:
         return []
 
-    chunk_id = f"{document.source_id}:0"
-    section = "documento-completo"
-    citation_label = f"{document.title}, documento completo"
-
-    return [
-        Chunk(
-            chunk_id=chunk_id,
-            source_id=document.source_id,
-            text=text,
-            section=section,
-            citation_label=citation_label,
-            metadata=document.metadata.to_chunk_metadata(
+    chunks: list[Chunk] = []
+    for index, (section, section_text) in enumerate(_split_legal_sections(text)):
+        chunk_id = f"{document.source_id}:{index}"
+        citation_label = f"{document.title}, {section}"
+        chunks.append(
+            Chunk(
                 chunk_id=chunk_id,
+                source_id=document.source_id,
+                text=section_text,
                 section=section,
                 citation_label=citation_label,
-            ),
+                metadata=document.metadata.to_chunk_metadata(
+                    chunk_id=chunk_id,
+                    section=section,
+                    citation_label=citation_label,
+                ),
+            )
         )
-    ]
+
+    return chunks
