@@ -1,0 +1,12 @@
+[mcp_servers.aws_mcp]
+command = 'C:\Users\Guillem\.local\bin\uvx.exe'
+args = [
+  "mcp-proxy-for-aws@latest",
+  "https://aws-mcp.eu-central-1.api.aws/mcp",
+  "--region", "eu-central-1",
+  "--metadata", "AWS_REGION=eu-central-1"
+]
+startup_timeout_sec = 60
+tool_timeout_sec = 300
+default_tools_approval_mode = "prompt"
+enabled = true

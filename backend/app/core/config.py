@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     allowed_origins: list[str] = ["http://localhost:8000", "http://localhost:5173"]
 
-    aws_region: str = "eu-west-1"
+    aws_region: str = "eu-south-2"
     bedrock_model_id: str | None = None
     bedrock_embedding_model_id: str | None = None
     s3_temp_bucket: str | None = None
