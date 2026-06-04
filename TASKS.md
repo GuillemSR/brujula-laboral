@@ -17,7 +17,7 @@
 - [x] Crear loader inicial de corpus desde JSON/Markdown.
 - [x] Crear pipeline inicial de chunking por fuente juridica.
 - [x] Crear adaptador inicial de embeddings.
-- [ ] Crear busqueda RAG local para prototipo.
+- [x] Crear busqueda RAG local para prototipo.
 - [ ] Generar respuestas con citas.
 
 ## Fase 2 - AWS manual
