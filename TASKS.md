@@ -18,7 +18,7 @@
 - [x] Crear pipeline inicial de chunking por fuente juridica.
 - [x] Crear adaptador inicial de embeddings.
 - [x] Crear busqueda RAG local para prototipo.
-- [ ] Generar respuestas con citas.
+- [x] Generar respuestas con citas.
 
 ## Fase 2 - AWS manual
 
