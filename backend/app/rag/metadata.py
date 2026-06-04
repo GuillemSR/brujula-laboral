@@ -59,6 +59,7 @@ class RagSourceMetadata(BaseModel):
     valid_to: date | None = None
     status: SourceStatus
     language: str = Field(default="es", min_length=2, max_length=10)
+    content_path: str | None = Field(default=None, min_length=1, max_length=300)
     notes: str | None = Field(default=None, max_length=1000)
 
     @field_validator("source_id")

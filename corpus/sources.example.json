@@ -15,6 +15,7 @@
     "valid_to": null,
     "status": "active",
     "language": "es",
+    "content_path": "markdown/boe-estatuto-trabajadores.md",
     "notes": "Texto refundido. Revisar version consolidada antes de ingesta."
   },
   {
@@ -33,6 +34,7 @@
     "valid_to": null,
     "status": "pending_review",
     "language": "es",
+    "content_path": "markdown/mitrabajo-guia-registro-jornada.md",
     "notes": "Pendiente localizar URL exacta y fecha oficial antes de ingesta."
   },
   {
@@ -51,6 +53,7 @@
     "valid_to": null,
     "status": "pending_review",
     "language": "es",
+    "content_path": "markdown/convenio-comercio-barcelona-pendiente.md",
     "notes": "Ejemplo pendiente: confirmar convenio aplicable, boletin oficial y vigencia."
   }
 ]

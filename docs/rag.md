@@ -30,6 +30,7 @@ antes de ingerir documentos.
 - `published_at`, `updated_at`, `valid_from`, `valid_to`: fechas ISO `YYYY-MM-DD` cuando se conozcan.
 - `status`: `active`, `superseded`, `pending_review` o `draft`.
 - `language`: idioma, por defecto `es`.
+- `content_path`: ruta relativa al manifiesto hacia el Markdown local de la fuente.
 - `notes`: observaciones no sensibles.
 
 ### Chunk
