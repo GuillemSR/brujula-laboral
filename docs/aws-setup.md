@@ -112,7 +112,7 @@ Validacion AWS MCP, 2026-06-04:
 - [x] Bucket S3 temporal con bloqueo publico.
 - [x] Cifrado S3 con KMS o SSE-S3 segun fase.
 - [x] Lifecycle corto para documentos temporales.
-- [ ] CloudWatch sin prompts, respuestas ni documentos.
+- [x] CloudWatch sin prompts, respuestas ni documentos.
 
 ## Budget y alarmas de coste
 
@@ -222,6 +222,26 @@ Evidencia AWS MCP:
   `GetBucketEncryption`, `GetBucketLifecycleConfiguration`,
   `GetBucketVersioning` y `GetBucketOwnershipControls` devolvio la configuracion
   esperada.
+
+## CloudWatch Logs
+
+Validacion realizada el 2026-06-10 con AWS MCP:
+
+- Regiones revisadas: `eu-south-2`, `eu-west-1` y `eu-central-1`.
+- Metodo: `logs.DescribeLogGroups` para inventariar CloudWatch Logs en cada
+  region y `logs.ListTagsForResource` para localizar grupos del proyecto por
+  etiqueta `Project=brujula-laboral`.
+- Resultado: las tres regiones devolvieron `0` log groups.
+- No se solicitaron ni leyeron mensajes de logs. La validacion se limito a
+  metadatos y conteos.
+
+Conclusion: en el estado actual no existe ningun log group de CloudWatch Logs en
+las regiones revisadas, por lo que no hay prompts, respuestas, textos extraidos
+ni documentos guardados en CloudWatch Logs para este proyecto.
+
+Limitacion: esta validacion debe repetirse cuando el backend este desplegado en
+AWS o cuando se habilite el flujo de documentos privados, porque entonces si
+podrian crearse log groups de aplicacion.
 
 ## Uso del AWS MCP
 

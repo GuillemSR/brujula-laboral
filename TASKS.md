@@ -30,8 +30,8 @@
 - [x] Validar modelos Bedrock, permisos IAM y region con AWS MCP si esta disponible.
 - [x] Crear bucket temporal cifrado para documentos.
 - [x] Validar bloqueo publico, cifrado y lifecycle del bucket temporal con AWS MCP si esta disponible.
-- [ ] Validar que CloudWatch no contiene prompts, respuestas ni documentos.
-- [ ] Documentar configuracion real en `docs/aws-setup.md`.
+- [x] Validar que CloudWatch no contiene prompts, respuestas ni documentos.
+- [x] Documentar configuracion real en `docs/aws-setup.md`.
 
 ## Fase 3 - Documentos privados
 
@@ -55,6 +55,7 @@
 - [ ] Pruebas de abstencion y datos faltantes.
 - [ ] Crear checklist de pruebas manuales antes de abrir una beta.
 - [ ] Revisar si el bucket temporal de documentos debe migrar de SSE-S3 a SSE-KMS antes de preproduccion o inicio de produccion.
+- [ ] Repetir validacion de CloudWatch Logs tras desplegar backend en AWS o habilitar documentos privados.
 - [ ] Validar la app con navegador integrado; investigar si persiste bloqueo de `localhost`/`127.0.0.1`.
 - [ ] Revision legal/RGPD antes de exponer documentos privados publicamente.
 - [ ] Rate limiting y proteccion basica frente a abuso.
