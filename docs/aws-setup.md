@@ -109,9 +109,9 @@ Validacion AWS MCP, 2026-06-04:
 - [x] Budget mensual y alarma de coste.
 - [ ] IAM minimo para desarrollo.
 - [x] Modelos Bedrock candidatos habilitados.
-- [ ] Bucket S3 temporal con bloqueo publico.
-- [ ] Cifrado S3 con KMS o SSE-S3 segun fase.
-- [ ] Lifecycle corto para documentos temporales.
+- [x] Bucket S3 temporal con bloqueo publico.
+- [x] Cifrado S3 con KMS o SSE-S3 segun fase.
+- [x] Lifecycle corto para documentos temporales.
 - [ ] CloudWatch sin prompts, respuestas ni documentos.
 
 ## Budget y alarmas de coste
@@ -179,6 +179,49 @@ Lite como alternativa barata si la calidad de Micro no alcanza, y no usar modelo
 Claude, Nova Pro, Mistral, Qwen ni `gpt-oss` hasta que haya benchmark o necesidad
 clara. `eu-west-1` sigue como fallback operativo si se necesita mas variedad de
 modelos baratos.
+
+## Bucket temporal de documentos
+
+Configuracion creada y validada el 2026-06-09 con AWS MCP en `eu-south-2`:
+
+- Nombre: `brujula-laboral-temp-docs-8fffbf8674`.
+- Uso previsto: almacenamiento efimero de documentos privados subidos por el
+  usuario durante una consulta.
+- Acceso publico: bloqueado con `BlockPublicAcls`, `IgnorePublicAcls`,
+  `BlockPublicPolicy` y `RestrictPublicBuckets` en `true`.
+- Ownership: `BucketOwnerEnforced`, sin ACLs.
+- Cifrado por defecto: SSE-S3 (`AES256`) por coste y simplicidad en esta fase.
+- Versionado: `Suspended`, para evitar versiones no evidentes de documentos
+  temporales.
+- Lifecycle: regla `expire-temporary-documents` activa con expiracion a 1 dia y
+  aborto de multipart uploads incompletos a 1 dia.
+- Etiquetas: `Project=brujula-laboral`, `DataClass=temporary-private-documents`
+  y `ManagedBy=manual-aws-mcp`.
+
+Decision: no usar SSE-KMS todavia para evitar el coste fijo de una clave
+customer-managed y mantener la configuracion simple durante el prototipo. Antes
+de preproduccion o inicio de produccion, revisar si el bucket debe migrar a
+SSE-KMS para separar permisos de S3 y KMS, mejorar auditoria de uso de claves y
+endurecer la postura ante documentos laborales privados.
+
+Nota operativa: S3 Lifecycle trabaja en dias. El borrado funcional previsto por
+la aplicacion seguira siendo explicito y mas corto (`TEMP_DOCUMENT_TTL_MINUTES`,
+actualmente 30 minutos); el lifecycle de 1 dia es una red de seguridad, no la
+politica principal de retencion.
+
+Evidencia AWS MCP:
+
+- `s3.CreateBucket` creo el bucket en `eu-south-2`.
+- `s3.PutPublicAccessBlock` configuro el bloqueo publico completo.
+- `s3.PutBucketEncryption` configuro SSE-S3 con `SSEAlgorithm = AES256`.
+- `s3.PutBucketLifecycleConfiguration` configuro expiracion y limpieza de
+  multipart uploads incompletos a 1 dia.
+- `s3.PutBucketVersioning` dejo el versionado en `Suspended`.
+- `s3.PutBucketOwnershipControls` configuro `BucketOwnerEnforced`.
+- Validacion posterior con `GetBucketLocation`, `GetPublicAccessBlock`,
+  `GetBucketEncryption`, `GetBucketLifecycleConfiguration`,
+  `GetBucketVersioning` y `GetBucketOwnershipControls` devolvio la configuracion
+  esperada.
 
 ## Uso del AWS MCP
 

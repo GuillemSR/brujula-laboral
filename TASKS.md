@@ -28,8 +28,8 @@
 - [x] Crear budget y alarmas de coste.
 - [x] Habilitar modelos Bedrock candidatos.
 - [x] Validar modelos Bedrock, permisos IAM y region con AWS MCP si esta disponible.
-- [ ] Crear bucket temporal cifrado para documentos.
-- [ ] Validar bloqueo publico, cifrado y lifecycle del bucket temporal con AWS MCP si esta disponible.
+- [x] Crear bucket temporal cifrado para documentos.
+- [x] Validar bloqueo publico, cifrado y lifecycle del bucket temporal con AWS MCP si esta disponible.
 - [ ] Validar que CloudWatch no contiene prompts, respuestas ni documentos.
 - [ ] Documentar configuracion real en `docs/aws-setup.md`.
 
@@ -54,6 +54,7 @@
 - [ ] Benchmark de modelos Bedrock candidatos.
 - [ ] Pruebas de abstencion y datos faltantes.
 - [ ] Crear checklist de pruebas manuales antes de abrir una beta.
+- [ ] Revisar si el bucket temporal de documentos debe migrar de SSE-S3 a SSE-KMS antes de preproduccion o inicio de produccion.
 - [ ] Validar la app con navegador integrado; investigar si persiste bloqueo de `localhost`/`127.0.0.1`.
 - [ ] Revision legal/RGPD antes de exponer documentos privados publicamente.
 - [ ] Rate limiting y proteccion basica frente a abuso.
