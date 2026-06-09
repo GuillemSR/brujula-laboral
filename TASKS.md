@@ -25,7 +25,7 @@
 - [x] Comparar `eu-west-1`, `eu-south-2` y `eu-central-1` para Bedrock y servicios necesarios.
 - [x] Validar comparativa regional con AWS MCP si esta disponible.
 - [x] Habilitar `eu-south-2` en la cuenta AWS y repetir validacion STS/Bedrock/modelos.
-- [ ] Crear budget y alarmas de coste.
+- [x] Crear budget y alarmas de coste.
 - [ ] Habilitar modelos Bedrock candidatos.
 - [ ] Validar modelos Bedrock, permisos IAM y region con AWS MCP si esta disponible.
 - [ ] Crear bucket temporal cifrado para documentos.

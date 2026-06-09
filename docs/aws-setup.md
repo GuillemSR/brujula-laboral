@@ -106,13 +106,44 @@ Validacion AWS MCP, 2026-06-04:
 ## Checklist inicial
 
 - [ ] Cuenta o entorno AWS separado para el proyecto.
-- [ ] Budget mensual y alarma de coste.
+- [x] Budget mensual y alarma de coste.
 - [ ] IAM minimo para desarrollo.
 - [ ] Modelos Bedrock candidatos habilitados.
 - [ ] Bucket S3 temporal con bloqueo publico.
 - [ ] Cifrado S3 con KMS o SSE-S3 segun fase.
 - [ ] Lifecycle corto para documentos temporales.
 - [ ] CloudWatch sin prompts, respuestas ni documentos.
+
+## Budget y alarmas de coste
+
+Configuracion creada el 2026-06-09 con AWS MCP:
+
+- Nombre: `brujula-laboral-mensual`.
+- Tipo: `COST`.
+- Periodicidad: mensual.
+- Limite: 10 USD/mes.
+- Moneda: AWS Budgets rechazo `EUR` para esta cuenta con el error `EUR is not
+  in the supported unit set: [USD]`, por lo que se uso `USD`.
+- Alcance: cuenta completa, sin filtros por servicio o region.
+- Notificaciones por email:
+  - `FORECASTED` mayor que 50%.
+  - `ACTUAL` mayor que 80%.
+  - `ACTUAL` mayor que 100%.
+- Estado validado: budget `HEALTHY`; las tres notificaciones estan en estado
+  `OK` y tienen suscriptor email configurado.
+
+Evidencia AWS MCP:
+
+- `budgets.CreateBudget` creo el budget en el endpoint de Billing
+  `us-east-1`.
+- `budgets.DescribeBudget` devolvio `BudgetLimit.Amount = 10.0`,
+  `BudgetLimit.Unit = USD`, `TimeUnit = MONTHLY` y `HealthStatus.Status =
+  HEALTHY`.
+- `budgets.DescribeNotificationsForBudget` devolvio las tres notificaciones
+  configuradas.
+- `budgets.DescribeSubscribersForNotification` confirmo un suscriptor email por
+  cada notificacion. La direccion no se documenta en el repositorio para evitar
+  guardar datos personales.
 
 ## Uso del AWS MCP
 
