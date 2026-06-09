@@ -56,8 +56,24 @@ node_modules/
 .vite/
 web/dist/
 
+# Codex / agent local runtime artifacts
+# Keep public project config such as .codex/config.toml and .agents/skills versioned.
+.codex/cache/
+.codex/logs/
+.codex/sessions/
+.codex/tmp/
+.codex/*.local.toml
+.agents/cache/
+.agents/logs/
+.agents/tmp/
+
 # OS/editor
 .DS_Store
 Thumbs.db
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/*.code-snippets

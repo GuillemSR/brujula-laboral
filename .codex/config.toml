@@ -1,5 +1,5 @@
 [mcp_servers.aws_mcp]
-command = 'C:\Users\Guillem\.local\bin\uvx.exe'
+command = "uvx"
 args = [
   "mcp-proxy-for-aws@latest",
   "https://aws-mcp.eu-central-1.api.aws/mcp",
