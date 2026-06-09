@@ -26,8 +26,8 @@
 - [x] Validar comparativa regional con AWS MCP si esta disponible.
 - [x] Habilitar `eu-south-2` en la cuenta AWS y repetir validacion STS/Bedrock/modelos.
 - [x] Crear budget y alarmas de coste.
-- [ ] Habilitar modelos Bedrock candidatos.
-- [ ] Validar modelos Bedrock, permisos IAM y region con AWS MCP si esta disponible.
+- [x] Habilitar modelos Bedrock candidatos.
+- [x] Validar modelos Bedrock, permisos IAM y region con AWS MCP si esta disponible.
 - [ ] Crear bucket temporal cifrado para documentos.
 - [ ] Validar bloqueo publico, cifrado y lifecycle del bucket temporal con AWS MCP si esta disponible.
 - [ ] Validar que CloudWatch no contiene prompts, respuestas ni documentos.

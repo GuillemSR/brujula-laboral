@@ -108,7 +108,7 @@ Validacion AWS MCP, 2026-06-04:
 - [ ] Cuenta o entorno AWS separado para el proyecto.
 - [x] Budget mensual y alarma de coste.
 - [ ] IAM minimo para desarrollo.
-- [ ] Modelos Bedrock candidatos habilitados.
+- [x] Modelos Bedrock candidatos habilitados.
 - [ ] Bucket S3 temporal con bloqueo publico.
 - [ ] Cifrado S3 con KMS o SSE-S3 segun fase.
 - [ ] Lifecycle corto para documentos temporales.
@@ -144,6 +144,41 @@ Evidencia AWS MCP:
 - `budgets.DescribeSubscribersForNotification` confirmo un suscriptor email por
   cada notificacion. La direccion no se documenta en el repositorio para evitar
   guardar datos personales.
+
+## Modelos Bedrock candidatos
+
+Seleccion inicial para pruebas de bajo coste, validada el 2026-06-09 con AWS
+MCP en `eu-south-2`:
+
+- Generacion por defecto: Amazon Nova Micro, perfil de inferencia
+  `eu.amazon.nova-micro-v1:0`.
+- Generacion fallback barato: Amazon Nova Lite, perfil de inferencia
+  `eu.amazon.nova-lite-v1:0`.
+- Embeddings: Amazon Titan Text Embeddings V2, modelo
+  `amazon.titan-embed-text-v2:0`.
+
+Nova Micro y Nova Lite aparecen en `eu-south-2` como modelos con inferencia por
+perfil (`INFERENCE_PROFILE`), no como invocacion on-demand directa. Los perfiles
+EU estan activos e incluyen `eu-south-2` entre las regiones del perfil. Titan
+Text Embeddings V2 aparece como `ON_DEMAND`.
+
+Evidencia AWS MCP:
+
+- `bedrock.ListFoundationModels` en `eu-south-2` devolvio
+  `amazon.nova-micro-v1:0`, `amazon.nova-lite-v1:0` y
+  `amazon.titan-embed-text-v2:0`.
+- `bedrock.ListInferenceProfiles` en `eu-south-2` devolvio los perfiles activos
+  `eu.amazon.nova-micro-v1:0` y `eu.amazon.nova-lite-v1:0`.
+- `bedrock-runtime.Converse` respondio correctamente con texto sintetico no
+  sensible para Nova Micro y Nova Lite.
+- `bedrock-runtime.InvokeModel` respondio correctamente para Titan Text
+  Embeddings V2 con un embedding de 256 dimensiones.
+
+Decision: usar Nova Micro para pruebas iniciales por coste minimo, mantener Nova
+Lite como alternativa barata si la calidad de Micro no alcanza, y no usar modelos
+Claude, Nova Pro, Mistral, Qwen ni `gpt-oss` hasta que haya benchmark o necesidad
+clara. `eu-west-1` sigue como fallback operativo si se necesita mas variedad de
+modelos baratos.
 
 ## Uso del AWS MCP
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start Next Task"
+  short_description: "Plan this repo's next TASKS.md item."
+  default_prompt: "Revisa TASKS.md, identifica la siguiente tarea pendiente, lee AGENTS.md y la documentacion/codigo relevante, y explicala en modo Plan sin empezar a implementarla."
