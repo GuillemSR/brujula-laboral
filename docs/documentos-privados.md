@@ -149,6 +149,17 @@ Validacion local actual:
 - `.\scripts\check.ps1`: formato, lint y suite completa correctos.
 - Tests especificos de subida, validaciones, borrado y adaptador S3 con dobles
   locales.
+- Tests especificos de privacidad sobre logs y errores:
+  - las validaciones 422 no devuelven el valor original de la pregunta ni otros
+    campos de entrada;
+  - los errores operativos del almacenamiento temporal devuelven un mensaje
+    generico y no propagan mensajes internos;
+  - los flujos de subida y consulta con documento no escriben en logs la
+    pregunta, el texto extraido ni el contenido del archivo.
+- `scripts/dev.ps1` arranca Uvicorn con `--no-access-log` para evitar que los
+  access logs conserven rutas con `document_id` temporal. Los despliegues
+  posteriores deben mantener access logs desactivados o saneados para rutas de
+  documentos privados.
 - Validacion AWS MCP repetida el 2026-06-10 sobre el bucket temporal real:
   region `eu-south-2`, bloqueo publico completo, SSE-S3 `AES256`, lifecycle a 1
   dia, versionado suspendido, ownership enforced y bucket vacio.

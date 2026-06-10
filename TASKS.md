@@ -38,7 +38,7 @@
 - [x] Implementar subida temporal de documentos en S3 cifrado con `document_id` efimero.
 - [x] Extraer texto sin persistir contenido.
 - [x] Borrar temporales explicitamente.
-- [ ] Verificar que no hay contenido sensible en logs.
+- [x] Verificar que no hay contenido sensible en logs.
 - [ ] Preparar aviso de privacidad previo a subida.
 
 ## Fase 4 - Web simple

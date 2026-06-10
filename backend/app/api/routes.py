@@ -14,6 +14,9 @@ from app.storage.s3_temporary import S3TemporaryStorage
 
 router = APIRouter()
 TEMPORARY_CONTEXT_SEARCH_CHARS = 20_000
+TEMPORARY_STORAGE_UNAVAILABLE_DETAIL = (
+    "Servicio temporal de documentos no disponible. Intentalo de nuevo mas tarde."
+)
 
 
 class AskRequest(BaseModel):
@@ -89,7 +92,7 @@ async def upload_document(
     except DocumentUploadError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
     except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=503, detail=TEMPORARY_STORAGE_UNAVAILABLE_DETAIL) from exc
 
     return DocumentUploadResponse(
         document_id=stored.document_id,
@@ -110,7 +113,7 @@ def delete_document(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail="Documento temporal no encontrado.") from exc
     except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=503, detail=TEMPORARY_STORAGE_UNAVAILABLE_DETAIL) from exc
     return DocumentDeleteResponse(deleted=True)
 
 
@@ -141,7 +144,9 @@ def ask(
                 detail="Documento temporal no encontrado o expirado. Vuelve a subirlo.",
             ) from exc
         except RuntimeError as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+            raise HTTPException(
+                status_code=503, detail=TEMPORARY_STORAGE_UNAVAILABLE_DETAIL
+            ) from exc
 
         temporary_context = build_temporary_context(extracted.filename, extracted.text)
         search_query = (
