@@ -28,7 +28,15 @@ decisions, and stop before edits or AWS mutations.
    - Pick the first unchecked task in the earliest active phase unless the user names a specific task.
    - If the next task depends on an earlier incomplete task, say so and work on the blocker first.
    - If the user asks only for "siguientes pasos" or prioritization, answer from `TASKS.md` without editing files.
-   - If a Codex thread-title tool is available, rename the current thread after identifying the task. Use a short title like `Fase 2 - Crear budget AWS` or `Fase 4 - Conectar chat`.
+   - If Codex thread tools are available, rename the current thread after
+     identifying the task. Use a short title like `Fase 2 - Crear budget AWS` or
+     `Fase 4 - Conectar chat`.
+     - Discover both `list_threads` and `set_thread_title`.
+     - Call `list_threads` and select the unique thread with `status: "active"`
+       and `cwd` matching the repository cwd.
+     - Call `set_thread_title` only when exactly one matching thread is found.
+     - If there is no unique match, skip the rename briefly; never invent a
+       thread id.
 
 3. Plan the work.
    - State the selected task and why it is next.
