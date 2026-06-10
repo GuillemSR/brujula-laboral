@@ -19,3 +19,11 @@ El objetivo inicial es un monolito modular: una unica aplicacion desplegable con
 - `GET /health`: comprobacion basica de salud.
 - `POST /ask`: consulta laboral/sindical sin documento privado adjunto.
 - `POST /query`: alias semantico de `/ask` para consultas sin documento.
+- `POST /documents`: subida temporal de documento privado a S3 cifrado.
+- `DELETE /documents/{document_id}`: borrado explicito de documento temporal.
+
+## Documentos temporales
+
+La subida inicial admite `.txt`, `.md`, `.pdf` y `.docx`, con un limite por
+defecto de 5 MiB (`TEMP_DOCUMENT_MAX_BYTES`). El endpoint devuelve un
+`document_id` efimero y no devuelve contenido del archivo.

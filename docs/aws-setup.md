@@ -223,6 +223,22 @@ Evidencia AWS MCP:
   `GetBucketVersioning` y `GetBucketOwnershipControls` devolvio la configuracion
   esperada.
 
+Validacion repetida el 2026-06-10 tras implementar la subida temporal de
+documentos:
+
+- Herramienta: `aws_mcp` mediante `mcp-proxy-for-aws`.
+- Operaciones de solo lectura: `sts.GetCallerIdentity`, `s3.GetBucketLocation`,
+  `s3.GetPublicAccessBlock`, `s3.GetBucketEncryption`,
+  `s3.GetBucketLifecycleConfiguration`, `s3.GetBucketVersioning`,
+  `s3.GetBucketOwnershipControls`, `s3.GetBucketTagging` y
+  `s3.ListObjectsV2`.
+- Resultado: bucket en `eu-south-2`, bloqueo publico completo, cifrado SSE-S3
+  `AES256`, lifecycle `expire-temporary-documents` activo con expiracion a 1 dia
+  y aborto de multipart uploads a 1 dia, versionado `Suspended`, ownership
+  `BucketOwnerEnforced`, etiquetas esperadas y `KeyCount = 0`.
+- No se enviaron documentos, texto extraido, prompts, respuestas ni secretos al
+  MCP.
+
 ## CloudWatch Logs
 
 Validacion realizada el 2026-06-10 con AWS MCP:

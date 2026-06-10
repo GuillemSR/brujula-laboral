@@ -19,6 +19,9 @@ Antes de subir documentos, la interfaz debe avisar:
 - que no se usa para entrenar modelos;
 - que conviene ocultar datos irrelevantes.
 
+El diseno de detalle para permitir preguntas posteriores sobre un mismo
+documento mediante `document_id` efimero esta en `docs/documentos-privados.md`.
+
 ## Revision pendiente
 
 Antes de abrir publicamente el flujo con documentos privados, revisar RGPD, aviso legal, politica de privacidad, borrado efectivo y logs.

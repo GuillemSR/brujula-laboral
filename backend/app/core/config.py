@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     store_model_responses: bool = False
     store_private_documents: bool = False
     temp_document_ttl_minutes: int = 30
+    temp_document_max_bytes: int = 5 * 1024 * 1024
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
