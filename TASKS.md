@@ -49,7 +49,16 @@
 - [ ] Anadir flujo de subida de documento.
 - [ ] Revisar experiencia movil basica.
 
-## Fase 5 - Evaluacion y apertura
+## Fase 5 - RAG de produccion
+
+- [ ] Elegir backend vectorial inicial: PostgreSQL + pgvector, OpenSearch o FAISS gestionado por la app.
+- [ ] Implementar pipeline de ingesta persistente con versionado de corpus y embeddings.
+- [ ] Sustituir embeddings hash locales por embeddings reales.
+- [ ] Implementar retrieval con filtros por metadatos juridicos.
+- [ ] Conectar generacion Bedrock con contexto RAG y citas verificables.
+- [ ] Crear evaluacion automatica de recuperacion y abstencion.
+
+## Fase 6 - Evaluacion y apertura
 
 - [ ] Benchmark de modelos Bedrock candidatos.
 - [ ] Pruebas de abstencion y datos faltantes.
