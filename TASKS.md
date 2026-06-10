@@ -39,13 +39,13 @@
 - [x] Extraer texto sin persistir contenido.
 - [x] Borrar temporales explicitamente.
 - [x] Verificar que no hay contenido sensible en logs.
-- [ ] Preparar aviso de privacidad previo a subida.
 
 ## Fase 4 - Web simple
 
 - [ ] Servir `web/index.html` y assets estaticos desde FastAPI en `/` para desarrollo local.
 - [ ] Conectar chat con backend.
 - [ ] Mostrar fuentes y limites de la respuesta.
+- [ ] Preparar aviso de privacidad previo a subida.
 - [ ] Anadir flujo de subida de documento.
 - [ ] Revisar experiencia movil basica.
 
