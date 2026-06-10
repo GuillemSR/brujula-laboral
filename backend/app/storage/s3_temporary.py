@@ -4,6 +4,7 @@ from re import fullmatch
 from typing import Any
 
 import boto3
+from botocore.exceptions import ClientError
 
 from app.core.config import Settings, get_settings
 
@@ -18,6 +19,14 @@ class StoredTemporaryDocument:
     content_type: str
     size_bytes: int
     expires_at: datetime
+
+
+@dataclass(frozen=True)
+class RetrievedTemporaryDocument:
+    document_id: str
+    content: bytes
+    content_type: str
+    size_bytes: int
 
 
 class S3TemporaryStorage:
@@ -62,13 +71,26 @@ class S3TemporaryStorage:
             expires_at=expires_at,
         )
 
-    def get_document(self, document_id: str) -> bytes:
+    def get_document(self, document_id: str) -> RetrievedTemporaryDocument:
         self.assert_configured()
-        response = self.client.get_object(
-            Bucket=self.settings.s3_temp_bucket,
-            Key=self.build_key(document_id),
+        try:
+            response = self.client.get_object(
+                Bucket=self.settings.s3_temp_bucket,
+                Key=self.build_key(document_id),
+            )
+        except ClientError as exc:
+            error_code = exc.response.get("Error", {}).get("Code")
+            if error_code in {"NoSuchKey", "404", "NotFound"}:
+                raise ValueError("Temporary document not found") from exc
+            raise RuntimeError("Could not read temporary document") from exc
+
+        content = response["Body"].read()
+        return RetrievedTemporaryDocument(
+            document_id=document_id,
+            content=content,
+            content_type=response.get("ContentType", "application/octet-stream"),
+            size_bytes=len(content),
         )
-        return response["Body"].read()
 
     def delete_document(self, document_id: str) -> None:
         self.assert_configured()

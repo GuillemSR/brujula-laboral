@@ -36,7 +36,7 @@
 ## Fase 3 - Documentos privados
 
 - [x] Implementar subida temporal de documentos en S3 cifrado con `document_id` efimero.
-- [ ] Extraer texto sin persistir contenido.
+- [x] Extraer texto sin persistir contenido.
 - [x] Borrar temporales explicitamente.
 - [ ] Verificar que no hay contenido sensible en logs.
 - [ ] Preparar aviso de privacidad previo a subida.

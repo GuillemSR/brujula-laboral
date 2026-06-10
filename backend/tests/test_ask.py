@@ -1,10 +1,34 @@
 from fastapi.testclient import TestClient
 
+from app.api.routes import get_temporary_storage_factory
 from app.main import create_app
+from app.storage.s3_temporary import RetrievedTemporaryDocument
+
+
+class FakeTemporaryStorage:
+    def __init__(
+        self,
+        documents: dict[str, RetrievedTemporaryDocument] | None = None,
+        missing_document_ids: set[str] | None = None,
+    ) -> None:
+        self.documents = documents or {}
+        self.missing_document_ids = missing_document_ids or set()
+
+    def get_document(self, document_id: str) -> RetrievedTemporaryDocument:
+        if document_id in self.missing_document_ids:
+            raise ValueError("Temporary document not found")
+        return self.documents[document_id]
+
+
+def build_client(storage: FakeTemporaryStorage | None = None) -> TestClient:
+    app = create_app()
+    temporary_storage = storage or FakeTemporaryStorage()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: temporary_storage
+    return TestClient(app)
 
 
 def test_ask_returns_cited_local_rag_response() -> None:
-    client = TestClient(create_app())
+    client = build_client()
 
     response = client.post("/ask", json={"question": "registro de jornada"})
 
@@ -19,7 +43,7 @@ def test_ask_returns_cited_local_rag_response() -> None:
 
 
 def test_query_alias_returns_same_response_shape() -> None:
-    client = TestClient(create_app())
+    client = build_client()
 
     response = client.post("/query", json={"question": "Estatuto de los Trabajadores"})
 
@@ -30,8 +54,81 @@ def test_query_alias_returns_same_response_shape() -> None:
 
 
 def test_ask_rejects_blank_question() -> None:
-    client = TestClient(create_app())
+    client = build_client()
 
     response = client.post("/ask", json={"question": "   "})
 
     assert response.status_code == 422
+
+
+def test_ask_with_document_extracts_text_without_echoing_private_content() -> None:
+    document_id = "a" * 32
+    private_text = "registro de jornada contenido privado de mi contrato"
+    storage = FakeTemporaryStorage(
+        documents={
+            document_id: RetrievedTemporaryDocument(
+                document_id=document_id,
+                content=private_text.encode(),
+                content_type="text/plain",
+                size_bytes=len(private_text),
+            )
+        }
+    )
+    client = build_client(storage)
+
+    response = client.post(
+        "/ask",
+        json={"question": "Que derechos tengo?", "document_id": document_id},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "Respuesta basada en el corpus local disponible." in payload["answer"]
+    assert "contenido privado" not in response.text
+    assert any(
+        "Documento privado temporal extraido solo en memoria" in limitation
+        for limitation in payload["limitations"]
+    )
+
+
+def test_ask_with_missing_document_returns_privacy_safe_error() -> None:
+    document_id = "b" * 32
+    storage = FakeTemporaryStorage(missing_document_ids={document_id})
+    client = build_client(storage)
+
+    response = client.post(
+        "/ask",
+        json={"question": "Que derechos tengo?", "document_id": document_id},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Documento temporal no encontrado o expirado. Vuelve a subirlo."
+    }
+
+
+def test_ask_with_unsupported_document_format_returns_privacy_safe_error() -> None:
+    document_id = "c" * 32
+    private_text = "contenido privado del documento"
+    storage = FakeTemporaryStorage(
+        documents={
+            document_id: RetrievedTemporaryDocument(
+                document_id=document_id,
+                content=private_text.encode(),
+                content_type="application/pdf",
+                size_bytes=len(private_text),
+            )
+        }
+    )
+    client = build_client(storage)
+
+    response = client.post(
+        "/ask",
+        json={"question": "Que derechos tengo?", "document_id": document_id},
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": "El formato del documento todavia no permite extraer texto."
+    }
+    assert "contenido privado" not in response.text

@@ -51,6 +51,11 @@ La API ya expone:
 - `POST /documents`: recibe un archivo, valida tipo y tamano, genera un
   `document_id` aleatorio y lo guarda en S3 temporal cifrado.
 - `DELETE /documents/{document_id}`: borra explicitamente el objeto temporal.
+- `POST /ask` y `POST /query`: aceptan un `document_id` opcional, recuperan el
+  objeto temporal, extraen texto en memoria y usan ese texto solo como contexto
+  efimero para orientar la busqueda en el corpus publico. El texto extraido no
+  se guarda, no se indexa en el RAG global y no se devuelve como fragmento de la
+  respuesta extractiva.
 
 El adaptador `S3TemporaryStorage` usa claves internas con el formato
 `temporary-documents/{document_id}`. No incluye el nombre real del archivo ni
@@ -58,6 +63,11 @@ contenido extraido en la clave S3 ni en los metadatos del objeto.
 
 Si `KMS_KEY_ID` esta configurado, la subida usa SSE-KMS. Si no lo esta, fuerza
 SSE-S3 con `AES256`, coherente con el bucket temporal inicial documentado.
+
+La extraccion inicial admite texto plano y Markdown cuando el objeto temporal se
+recupera con `text/plain`, `text/markdown` o `application/octet-stream`. PDF y
+DOCX siguen admitidos en la subida, pero la consulta devuelve un error
+controlado hasta incorporar extractores especificos.
 
 ## Contrato esperado
 
@@ -98,15 +108,12 @@ extraccion y coste.
 
 ## Plan de actuacion siguiente
 
-1. Implementar la consulta con `document_id` como contrato de entrada.
-2. Cargar el binario desde S3 temporal usando el adaptador existente.
-3. Extraer texto solo en memoria y no persistirlo.
-4. Construir el contexto temporal de la consulta sin mezclarlo con el RAG global.
-5. Borrar explicitamente el temporal cuando el flujo lo requiera y mantener el
+1. Ampliar extraccion real para PDF y DOCX sin persistir contenido.
+2. Borrar explicitamente el temporal cuando el flujo lo requiera y mantener el
    lifecycle del bucket como red de seguridad.
-6. Verificar que logs, errores, respuestas, claves S3 y metadatos no contienen
+3. Verificar que logs, errores, respuestas, claves S3 y metadatos no contienen
    texto del documento ni datos personales derivados.
-7. Validar configuracion AWS del bucket temporal cuando haya credenciales
+4. Validar configuracion AWS del bucket temporal cuando haya credenciales
    disponibles, sin enviar documentos, texto extraido, prompts ni respuestas a
    herramientas externas.
 
