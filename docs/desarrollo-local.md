@@ -63,7 +63,9 @@ relativas para llamar a `POST /ask`, `POST /documents` y
 
 Para trabajar sin cuota activa de Bedrock, activar el proveedor mock. El mock no
 llama a AWS y devuelve una respuesta con la misma forma basica de la API
-`Converse` de Bedrock:
+`Converse` de Bedrock. La respuesta local incluye varios parrafos, una lista de
+acciones y, cuando el RAG local recupera fuentes, marcadores como `[1]` para
+revisar como se ve una cita en la interfaz:
 
 ```env
 AI_PROVIDER=mock

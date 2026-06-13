@@ -26,7 +26,10 @@ Comportamiento esperado:
 - Si Bedrock no esta configurado o falla en desarrollo local, se usa un fallback
   orientativo local para mantener el flujo de la interfaz.
 - Si `AI_PROVIDER=mock`, se usa un mock local de generacion con la forma basica
-  de `Converse`, sin llamadas a AWS.
+  de `Converse`, sin llamadas a AWS. El texto mockeado es deliberadamente mas
+  largo y estructurado para revisar la interfaz con varios parrafos, lista de
+  acciones y marcadores de cita. Solo usa marcadores como `[1]` cuando proceden
+  de fuentes RAG recuperadas; no inventa citas si el prompt no trae evidencia.
 - La respuesta no debe inventar fuentes, articulos o sentencias. Solo se citan
   fuentes que existan en el corpus recuperado.
 

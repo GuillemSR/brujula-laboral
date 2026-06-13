@@ -62,12 +62,42 @@ def test_mock_bedrock_runtime_returns_converse_shape_with_usage() -> None:
     usage = response["usage"]
     assert response["output"]["message"]["role"] == "assistant"
     assert content[0]["text"].startswith("Respuesta mock local:")
+    assert "Orientacion inicial:" in content[0]["text"]
+    assert "Siguiente paso:" in content[0]["text"]
     assert "[1]" in content[0]["text"]
     assert response["stopReason"] == "end_turn"
     assert usage["inputTokens"] > 0
     assert usage["outputTokens"] > 0
     assert usage["totalTokens"] == usage["inputTokens"] + usage["outputTokens"]
     assert response["metrics"]["latencyMs"] == 1
+
+
+def test_mock_bedrock_runtime_does_not_cite_format_instructions_as_sources() -> None:
+    runtime = MockBedrockRuntimeClient()
+
+    response = runtime.converse(
+        modelId="mock.amazon.nova-micro-v1:0",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": (
+                            "Consulta de la persona usuaria:\n"
+                            "despido estando de baja\n\n"
+                            "Fuentes RAG disponibles:\n"
+                            "Sin fragmentos de apoyo para citar.\n\n"
+                            "Instrucciones de formato:\n"
+                            "- Si usas una fuente RAG, cita el marcador correspondiente como [1]."
+                        )
+                    }
+                ],
+            }
+        ],
+    )
+
+    content = response["output"]["message"]["content"]
+    assert "[1]" not in content[0]["text"]
 
 
 def test_mock_bedrock_runtime_is_deterministic() -> None:

@@ -92,8 +92,29 @@ def test_ask_uses_mock_provider_when_configured(monkeypatch) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["answer"].startswith("Respuesta mock local:")
+    assert "Orientacion inicial:" in payload["answer"]
+    assert "Siguiente paso:" in payload["answer"]
     assert "[1]" in payload["answer"]
     assert payload["sources"]
+
+
+def test_ask_mock_provider_without_sources_does_not_add_fake_citation(monkeypatch) -> None:
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(ai_provider="mock", bedrock_model_id=None),
+    )
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    client = TestClient(app)
+
+    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"].startswith("Respuesta mock local:")
+    assert "[1]" not in payload["answer"]
+    assert payload["sources"] == []
 
 
 def test_bedrock_provider_without_model_id_uses_local_fallback(monkeypatch) -> None:
