@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,6 +10,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     allowed_origins: list[str] = ["http://localhost:8000", "http://localhost:5173"]
 
+    ai_provider: Literal["bedrock", "mock"] = "bedrock"
     aws_region: str = "eu-south-2"
     bedrock_model_id: str | None = None
     bedrock_embedding_model_id: str | None = None

@@ -42,12 +42,12 @@
 
 ## Fase 4 - Web simple
 
-- [ ] Servir `web/index.html` y assets estaticos desde FastAPI en `/` para desarrollo local.
-- [ ] Conectar chat con backend.
-- [ ] Mostrar fuentes y limites de la respuesta.
-- [ ] Preparar aviso de privacidad previo a subida.
-- [ ] Anadir flujo de subida de documento.
-- [ ] Revisar experiencia movil basica.
+- [x] Servir `web/index.html` y assets estaticos desde FastAPI en `/` para desarrollo local.
+- [x] Conectar chat con backend.
+- [x] Mostrar fuentes y limites de la respuesta.
+- [x] Preparar aviso de privacidad previo a subida.
+- [x] Anadir flujo de subida de documento.
+- [x] Revisar experiencia movil basica.
 
 ## Fase 4.5 - Pruebas intensivas y despliegue AWS de prueba
 

@@ -1,6 +1,9 @@
 from fastapi.testclient import TestClient
 
-from app.api.routes import get_temporary_storage_factory
+import app.api.routes as routes
+from app.api.routes import get_answer_generator, get_temporary_storage_factory
+from app.ai.bedrock_client import ModelResponse
+from app.core.config import Settings
 from app.main import create_app
 from app.storage.s3_temporary import RetrievedTemporaryDocument
 
@@ -24,6 +27,7 @@ def build_client(storage: FakeTemporaryStorage | None = None) -> TestClient:
     app = create_app()
     temporary_storage = storage or FakeTemporaryStorage()
     app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: temporary_storage
+    app.dependency_overrides[get_answer_generator] = lambda: None
     return TestClient(app)
 
 
@@ -34,12 +38,80 @@ def test_ask_returns_cited_local_rag_response() -> None:
 
     assert response.status_code == 200
     payload = response.json()
-    assert "Respuesta basada en el corpus local disponible." in payload["answer"]
+    assert "referencias principales" in payload["answer"]
     assert payload["sources"]
     assert payload["sources"][0]["title"]
     assert payload["sources"][0]["url"]
     assert payload["sources"][0]["reference"]
     assert "No debe usarse como asesoramiento legal." in payload["limitations"]
+
+
+def test_ask_without_relevant_public_sources_still_answers() -> None:
+    client = build_client()
+
+    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "orientacion general" in payload["answer"]
+    assert payload["sources"] == []
+    assert "registro de jornada" not in response.text.lower()
+
+
+def test_ask_uses_model_generator_when_available() -> None:
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    app.dependency_overrides[get_answer_generator] = lambda: (
+        lambda _prompt, _system_prompt: ModelResponse(
+            text="Respuesta generada por modelo.",
+            model_id="test",
+        )
+    )
+    client = TestClient(app)
+
+    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"] == "Respuesta generada por modelo."
+    assert payload["sources"] == []
+
+
+def test_ask_uses_mock_provider_when_configured(monkeypatch) -> None:
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(ai_provider="mock", bedrock_model_id=None),
+    )
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    client = TestClient(app)
+
+    response = client.post("/ask", json={"question": "registro de jornada"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"].startswith("Respuesta mock local:")
+    assert "[1]" in payload["answer"]
+    assert payload["sources"]
+
+
+def test_bedrock_provider_without_model_id_uses_local_fallback(monkeypatch) -> None:
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(ai_provider="bedrock", bedrock_model_id=None),
+    )
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    client = TestClient(app)
+
+    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "orientacion general" in payload["answer"]
+    assert payload["sources"] == []
 
 
 def test_query_alias_returns_same_response_shape() -> None:
@@ -83,7 +155,7 @@ def test_ask_with_document_extracts_text_without_echoing_private_content() -> No
 
     assert response.status_code == 200
     payload = response.json()
-    assert "Respuesta basada en el corpus local disponible." in payload["answer"]
+    assert "referencias principales" in payload["answer"]
     assert "contenido privado" not in response.text
     assert any(
         "Documento privado temporal extraido solo en memoria" in limitation

@@ -4,7 +4,7 @@ from re import fullmatch
 from typing import Any
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 from app.core.config import Settings, get_settings
 
@@ -61,7 +61,10 @@ class S3TemporaryStorage:
             "Expires": expires_at,
         }
         put_kwargs.update(self._encryption_kwargs())
-        self.client.put_object(**put_kwargs)
+        try:
+            self.client.put_object(**put_kwargs)
+        except (BotoCoreError, ClientError) as exc:
+            raise RuntimeError("Could not store temporary document") from exc
 
         return StoredTemporaryDocument(
             document_id=document_id,
@@ -94,10 +97,13 @@ class S3TemporaryStorage:
 
     def delete_document(self, document_id: str) -> None:
         self.assert_configured()
-        self.client.delete_object(
-            Bucket=self.settings.s3_temp_bucket,
-            Key=self.build_key(document_id),
-        )
+        try:
+            self.client.delete_object(
+                Bucket=self.settings.s3_temp_bucket,
+                Key=self.build_key(document_id),
+            )
+        except (BotoCoreError, ClientError) as exc:
+            raise RuntimeError("Could not delete temporary document") from exc
 
     def build_key(self, document_id: str) -> str:
         if not fullmatch(r"[a-f0-9]{32}", document_id):

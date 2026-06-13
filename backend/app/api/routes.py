@@ -4,6 +4,8 @@ from typing import Callable
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field, field_validator
 
+from app.ai.bedrock_client import BedrockClient, ModelResponse
+from app.ai.mock_bedrock import MockBedrockRuntimeClient
 from app.core.config import get_settings
 from app.documents.extraction import DocumentExtractionError, extract_text
 from app.documents.temporary_context import build_temporary_context
@@ -14,6 +16,7 @@ from app.storage.s3_temporary import S3TemporaryStorage
 
 router = APIRouter()
 TEMPORARY_CONTEXT_SEARCH_CHARS = 20_000
+DEFAULT_MOCK_MODEL_ID = "mock.amazon.nova-micro-v1:0"
 TEMPORARY_STORAGE_UNAVAILABLE_DETAIL = (
     "Servicio temporal de documentos no disponible. Intentalo de nuevo mas tarde."
 )
@@ -62,11 +65,38 @@ class DocumentDeleteResponse(BaseModel):
 
 
 def get_temporary_storage() -> S3TemporaryStorage:
-    return S3TemporaryStorage()
+    try:
+        return S3TemporaryStorage()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=TEMPORARY_STORAGE_UNAVAILABLE_DETAIL) from exc
 
 
 def get_temporary_storage_factory() -> Callable[[], S3TemporaryStorage]:
-    return S3TemporaryStorage
+    def build_storage() -> S3TemporaryStorage:
+        try:
+            return S3TemporaryStorage()
+        except Exception as exc:
+            raise RuntimeError("Temporary storage unavailable") from exc
+
+    return build_storage
+
+
+def get_answer_generator() -> Callable[[str, str], ModelResponse] | None:
+    settings = get_settings()
+    if settings.ai_provider == "mock":
+        mock_settings = (
+            settings
+            if settings.bedrock_model_id
+            else settings.model_copy(update={"bedrock_model_id": DEFAULT_MOCK_MODEL_ID})
+        )
+        return BedrockClient(client=MockBedrockRuntimeClient(), settings=mock_settings).generate
+
+    if not settings.bedrock_model_id:
+        return None
+    try:
+        return BedrockClient(settings=settings).generate
+    except Exception:
+        return None
 
 
 @router.get("/health")
@@ -122,14 +152,16 @@ def delete_document(
 def ask(
     request: AskRequest,
     storage_factory: Callable[[], S3TemporaryStorage] = Depends(get_temporary_storage_factory),
+    answer_generator: Callable[[str, str], ModelResponse] | None = Depends(get_answer_generator),
 ) -> AskResponse:
     settings = get_settings()
     search_query = request.question
+    private_context: str | None = None
     used_temporary_document = False
 
     if request.document_id:
-        storage = storage_factory()
         try:
+            storage = storage_factory()
             temporary_document = storage.get_document(request.document_id)
             extracted = extract_text(
                 filename="documento-temporal",
@@ -152,6 +184,7 @@ def ask(
         search_query = (
             f"{request.question}\n\n{temporary_context.text[:TEMPORARY_CONTEXT_SEARCH_CHARS]}"
         )
+        private_context = temporary_context.text[:TEMPORARY_CONTEXT_SEARCH_CHARS]
         used_temporary_document = True
 
     retriever = build_local_retriever(manifest_path=Path("corpus/sources.example.json"))
@@ -160,7 +193,13 @@ def ask(
         for result in retriever.search(search_query, top_k=settings.rag_top_k)
         if result.score >= settings.rag_min_score
     ]
-    cited_answer = build_cited_answer(request.question, results)
+    cited_answer = build_cited_answer(
+        question=request.question,
+        results=results,
+        relevance_query=search_query,
+        private_context=private_context,
+        generate_answer=answer_generator,
+    )
     limitations = list(cited_answer.limitations)
     if used_temporary_document:
         limitations.append(

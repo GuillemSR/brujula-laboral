@@ -1,3 +1,4 @@
+from app.ai.bedrock_client import ModelResponse
 from app.rag.answering import build_cited_answer
 from app.rag.chunking import SourceDocument, chunk_document
 from app.rag.metadata import RagSourceMetadata
@@ -36,8 +37,48 @@ def test_build_cited_answer_includes_sources_and_references() -> None:
     assert answer.sources[0].reference == "Fuente test, Jornada"
 
 
-def test_build_cited_answer_handles_empty_results() -> None:
+def test_build_cited_answer_responds_without_relevant_results() -> None:
+    answer = build_cited_answer("despido estando de baja", [_result()])
+
+    assert "orientacion general" in answer.answer
+    assert answer.sources == []
+
+
+def test_build_cited_answer_handles_empty_results_with_single_answer() -> None:
     answer = build_cited_answer("consulta sin cobertura", [])
 
-    assert "No he encontrado fuentes" in answer.answer
+    assert "orientacion general" in answer.answer
+    assert answer.sources == []
+
+
+def test_build_cited_answer_uses_model_even_without_sources() -> None:
+    calls: list[tuple[str, str]] = []
+
+    def generate(prompt: str, system_prompt: str) -> ModelResponse:
+        calls.append((prompt, system_prompt))
+        return ModelResponse(text="Respuesta generada sin depender del corpus.", model_id="test")
+
+    answer = build_cited_answer(
+        "despido estando de baja",
+        [],
+        generate_answer=generate,
+    )
+
+    assert answer.answer == "Respuesta generada sin depender del corpus."
+    assert answer.sources == []
+    assert calls
+    assert "no menciones esa ausencia" in calls[0][0]
+
+
+def test_build_cited_answer_falls_back_when_model_fails() -> None:
+    def generate(_prompt: str, _system_prompt: str) -> ModelResponse:
+        raise RuntimeError("model unavailable")
+
+    answer = build_cited_answer(
+        "despido estando de baja",
+        [],
+        generate_answer=generate,
+    )
+
+    assert "orientacion general" in answer.answer
     assert answer.sources == []

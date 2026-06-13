@@ -3,7 +3,12 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
-from app.api.routes import get_temporary_storage, get_temporary_storage_factory
+import app.api.routes as routes
+from app.api.routes import (
+    get_answer_generator,
+    get_temporary_storage,
+    get_temporary_storage_factory,
+)
 from app.main import VALIDATION_ERROR_DETAIL, create_app
 from app.storage.s3_temporary import RetrievedTemporaryDocument, StoredTemporaryDocument
 
@@ -61,7 +66,9 @@ class WorkingUploadStorage:
 
 def test_validation_errors_do_not_echo_sensitive_inputs_or_log_them(caplog) -> None:
     caplog.set_level(logging.INFO)
-    client = TestClient(create_app())
+    app = create_app()
+    app.dependency_overrides[get_answer_generator] = lambda: None
+    client = TestClient(app)
     sentinel = "SENTINELA_PRIVADA_NOMINA_123456789"
 
     response = client.post("/ask", json={"question": sentinel * 200})
@@ -92,10 +99,33 @@ def test_upload_storage_errors_do_not_echo_sensitive_content_or_log_it(caplog) -
     assert sentinel not in caplog.text
 
 
+def test_upload_storage_constructor_errors_are_privacy_safe(caplog, monkeypatch) -> None:
+    caplog.set_level(logging.INFO)
+    sentinel = "SENTINELA_CLIENTE_S3_444"
+
+    class FailingStorageConstructor:
+        def __init__(self) -> None:
+            raise RuntimeError(f"fallo interno con {sentinel}")
+
+    monkeypatch.setattr(routes, "S3TemporaryStorage", FailingStorageConstructor)
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/documents",
+        files={"file": ("contrato-privado.txt", b"contenido privado", "text/plain")},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": routes.TEMPORARY_STORAGE_UNAVAILABLE_DETAIL}
+    assert sentinel not in response.text
+    assert sentinel not in caplog.text
+
+
 def test_ask_storage_errors_do_not_echo_sensitive_question_or_log_it(caplog) -> None:
     caplog.set_level(logging.INFO)
     sentinel = "SENTINELA_PRIVADA_PREGUNTA_456789123"
     app = create_app()
+    app.dependency_overrides[get_answer_generator] = lambda: None
     app.dependency_overrides[get_temporary_storage_factory] = lambda: (
         lambda: FailingReadStorage(f"fallo interno con {sentinel}")
     )
@@ -107,6 +137,30 @@ def test_ask_storage_errors_do_not_echo_sensitive_question_or_log_it(caplog) -> 
     )
 
     assert response.status_code == 503
+    assert sentinel not in response.text
+    assert sentinel not in caplog.text
+
+
+def test_ask_storage_constructor_errors_are_privacy_safe(caplog, monkeypatch) -> None:
+    caplog.set_level(logging.INFO)
+    sentinel = "SENTINELA_CLIENTE_S3_555"
+
+    class FailingStorageConstructor:
+        def __init__(self) -> None:
+            raise RuntimeError(f"fallo interno con {sentinel}")
+
+    monkeypatch.setattr(routes, "S3TemporaryStorage", FailingStorageConstructor)
+    app = create_app()
+    app.dependency_overrides[get_answer_generator] = lambda: None
+    client = TestClient(app)
+
+    response = client.post(
+        "/ask",
+        json={"question": f"Pregunta privada {sentinel}", "document_id": "a" * 32},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": routes.TEMPORARY_STORAGE_UNAVAILABLE_DETAIL}
     assert sentinel not in response.text
     assert sentinel not in caplog.text
 
@@ -123,6 +177,7 @@ def test_private_document_flow_does_not_log_question_or_extracted_text(caplog) -
         size_bytes=len(document_sentinel),
     )
     app = create_app()
+    app.dependency_overrides[get_answer_generator] = lambda: None
     app.dependency_overrides[get_temporary_storage_factory] = lambda: (
         lambda: WorkingReadStorage(document)
     )

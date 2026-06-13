@@ -4,17 +4,53 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Brujula Laboral</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <main class="shell">
       <section class="chat">
-        <header>
+        <header class="page-header">
           <h1>Brujula Laboral</h1>
           <p>Orientacion laboral y sindical con fuentes verificables.</p>
         </header>
 
-        <form id="ask-form">
+        <section class="document-panel" aria-labelledby="document-title">
+          <div class="section-heading">
+            <h2 id="document-title">Documento privado temporal</h2>
+            <p>Opcional para orientar la consulta con un archivo propio.</p>
+          </div>
+
+          <div class="privacy-notice">
+            <p>
+              La respuesta es orientativa. El documento se procesa de forma temporal, no se
+              conserva por defecto, no se usa para entrenar modelos y conviene ocultar datos
+              personales que no sean necesarios.
+            </p>
+            <p>
+              La subida admite TXT, Markdown, PDF y DOCX. Para consultar el contenido, la
+              extraccion actual solo esta disponible para texto y Markdown.
+            </p>
+          </div>
+
+          <form id="document-form" class="document-form">
+            <label class="checkbox-row" for="privacy-confirmation">
+              <input id="privacy-confirmation" type="checkbox" />
+              <span>He leido el aviso de privacidad antes de subir el documento.</span>
+            </label>
+
+            <div class="upload-row">
+              <label class="file-label" for="document-file">Archivo</label>
+              <input id="document-file" name="file" type="file" accept=".txt,.md,.pdf,.docx" />
+              <button id="upload-button" type="submit" disabled>Subir</button>
+            </div>
+          </form>
+
+          <div id="document-status" class="document-status" aria-live="polite">
+            No hay documento temporal activo.
+          </div>
+        </section>
+
+        <form id="ask-form" class="ask-form">
           <label for="question">Consulta</label>
           <textarea
             id="question"
@@ -23,12 +59,12 @@
             placeholder="Ejemplo: ¿Me pueden despedir estando de baja?"
             required
           ></textarea>
-          <button type="submit">Consultar</button>
+          <button id="ask-button" type="submit">Consultar</button>
         </form>
 
-        <section id="result" class="result" aria-live="polite"></section>
+        <section id="result" class="result" aria-live="polite" aria-label="Resultado"></section>
       </section>
     </main>
-    <script src="./app.js"></script>
+    <script src="/static/app.js"></script>
   </body>
 </html>
