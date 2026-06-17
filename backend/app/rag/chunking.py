@@ -26,6 +26,14 @@ SECTION_PATTERN = re.compile(
     r"^(?P<section>(?:#{1,6}\s+.+)|(?:Articulo\s+\d+[^\n]*)|(?:Clausula\s+\d+[^\n]*))$",
     re.IGNORECASE,
 )
+MAX_SECTION_LABEL_LENGTH = 200
+MAX_CITATION_LABEL_LENGTH = 500
+
+
+def _truncate_label(value: str, max_length: int) -> str:
+    if len(value) <= max_length:
+        return value
+    return f"{value[: max_length - 3].rstrip()}..."
 
 
 def _normalize_section(line: str) -> str:
@@ -68,17 +76,20 @@ def chunk_document(document: SourceDocument) -> list[Chunk]:
     chunks: list[Chunk] = []
     for index, (section, section_text) in enumerate(_split_legal_sections(text)):
         chunk_id = f"{document.source_id}:{index}"
-        citation_label = f"{document.title}, {section}"
+        section_label = _truncate_label(section, MAX_SECTION_LABEL_LENGTH)
+        citation_label = _truncate_label(
+            f"{document.title}, {section_label}", MAX_CITATION_LABEL_LENGTH
+        )
         chunks.append(
             Chunk(
                 chunk_id=chunk_id,
                 source_id=document.source_id,
                 text=section_text,
-                section=section,
+                section=section_label,
                 citation_label=citation_label,
                 metadata=document.metadata.to_chunk_metadata(
                     chunk_id=chunk_id,
-                    section=section,
+                    section=section_label,
                     citation_label=citation_label,
                 ),
             )

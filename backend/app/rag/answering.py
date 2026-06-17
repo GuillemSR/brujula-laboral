@@ -62,6 +62,14 @@ class CitedAnswer:
     limitations: list[str]
 
 
+@dataclass(frozen=True)
+class AnswerContext:
+    prompt: str
+    results: list[RetrievalResult]
+    sources: list[CitedSource]
+    limitations: list[str]
+
+
 GenerateAnswer = Callable[[str, str], ModelResponse]
 SYSTEM_PROMPT = (
     "Eres Brujula Laboral, un asistente laboral y sindical para Espana. "
@@ -182,27 +190,46 @@ def build_cited_answer(
     private_context: str | None = None,
     generate_answer: GenerateAnswer | None = None,
 ) -> CitedAnswer:
-    results = [
-        result for result in results if _matches_query_terms(relevance_query or question, result)
-    ]
-    prompt = build_answer_prompt(
+    context = build_answer_context(
         question=question,
         results=results,
+        relevance_query=relevance_query,
         private_context=private_context,
     )
     if generate_answer:
         try:
-            answer = generate_answer(prompt, SYSTEM_PROMPT).text.strip()
+            answer = generate_answer(context.prompt, SYSTEM_PROMPT).text.strip()
             if not answer:
-                answer = _fallback_answer(question, results)
+                answer = _fallback_answer(question, context.results)
         except RuntimeError:
-            answer = _fallback_answer(question, results)
+            answer = _fallback_answer(question, context.results)
     else:
-        answer = _fallback_answer(question, results)
+        answer = _fallback_answer(question, context.results)
 
     return CitedAnswer(
         answer=answer,
-        sources=_sources(results),
+        sources=context.sources,
+        limitations=context.limitations,
+    )
+
+
+def build_answer_context(
+    question: str,
+    results: list[RetrievalResult],
+    relevance_query: str | None = None,
+    private_context: str | None = None,
+) -> AnswerContext:
+    filtered_results = [
+        result for result in results if _matches_query_terms(relevance_query or question, result)
+    ]
+    return AnswerContext(
+        prompt=build_answer_prompt(
+            question=question,
+            results=filtered_results,
+            private_context=private_context,
+        ),
+        results=filtered_results,
+        sources=_sources(filtered_results),
         limitations=[
             "Respuesta orientativa.",
             "Las fuentes del corpus se muestran solo cuando hay coincidencias relevantes.",

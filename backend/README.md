@@ -18,6 +18,7 @@ El objetivo inicial es un monolito modular: una unica aplicacion desplegable con
 
 - `GET /health`: comprobacion basica de salud.
 - `POST /ask`: consulta laboral/sindical sin documento privado adjunto.
+- `POST /ask/stream`: consulta en streaming NDJSON para el placeholder local.
 - `POST /query`: alias semantico de `/ask` para consultas sin documento.
 - `POST /documents`: subida temporal de documento privado a S3 cifrado.
 - `DELETE /documents/{document_id}`: borrado explicito de documento temporal.

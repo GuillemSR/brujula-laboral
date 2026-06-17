@@ -64,3 +64,11 @@ def test_build_local_retriever_from_example_manifest() -> None:
 
     assert len(results) == 2
     assert all(result.chunk.text for result in results)
+
+
+def test_example_manifest_retrieves_downloaded_remote_work_source() -> None:
+    retriever = build_local_retriever(Path("corpus/sources.example.json"))
+
+    results = retriever.search("teletrabajo trabajo a distancia acuerdo", top_k=3)
+
+    assert any(result.chunk.source_id == "boe-ley-trabajo-distancia" for result in results)
