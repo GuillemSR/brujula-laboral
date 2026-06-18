@@ -11,9 +11,10 @@ from app.rag.metadata import RagSourceMetadata, SourceType, load_source_manifest
 def test_example_source_manifest_loads() -> None:
     sources = load_source_manifest(Path("corpus/sources.example.json"))
 
-    assert len(sources) == 3
+    assert len(sources) == 4
     assert sources[0].source_id == "boe-estatuto-trabajadores"
     assert sources[0].source_type == SourceType.LEGISLATION
+    assert sources[-1].source_id == "boe-ley-trabajo-distancia"
 
 
 def test_manifest_requires_core_fields(tmp_path: Path) -> None:

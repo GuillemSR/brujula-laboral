@@ -7,7 +7,7 @@ Asistente laboral y sindical basado en IA, orientado a facilitar el acceso a inf
 - Proyecto personal y pequeno, con arquitectura simple.
 - Backend Python/FastAPI como monolito modular.
 - RAG propio inicial para fuentes publicas laborales y sindicales.
-- AWS Bedrock como proveedor de modelos gestionados.
+- AWS Bedrock como proveedor de modelos gestionados, con Ollama local solo como alternativa temporal de desarrollo.
 - Documentos privados tratados de forma efimera y fuera del indice RAG.
 - Configuracion AWS manual al inicio, documentada en el repositorio.
 
@@ -15,7 +15,7 @@ Asistente laboral y sindical basado en IA, orientado a facilitar el acceso a inf
 
 ```text
 backend/   API, RAG, Bedrock, documentos, almacenamiento y privacidad
-web/       Interfaz estatica inicial de chat
+web/       Placeholder estatico temporal para probar la funcionalidad
 corpus/    Fuentes publicas y manifiestos de ingesta
 evals/     Preguntas y criterios de evaluacion
 docs/      Arquitectura, AWS, privacidad y notas tecnicas

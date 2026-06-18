@@ -51,7 +51,7 @@
 
 ## Fase 4.5 - Pruebas intensivas y despliegue AWS de prueba
 
-- [ ] Definir y documentar un plan de pruebas intensivas del producto: codigo, API, RAG, privacidad, documentos, web desktop/movil y casos limite.
+- [x] Definir y documentar un plan de pruebas intensivas del producto: codigo, API, RAG, privacidad, documentos, web desktop/movil y casos limite.
 - [ ] Ejecutar pruebas automatizadas locales: formato, lint, tests de backend y cualquier evaluacion RAG disponible.
 - [ ] Probar la web con navegador integrado: chat, fuentes, errores, subida/borrado de documentos, estados de carga y experiencia responsive.
 - [ ] Documentar las pruebas que no pueda ejecutar Codex con herramientas automaticas y pedir al usuario que las haga manualmente.

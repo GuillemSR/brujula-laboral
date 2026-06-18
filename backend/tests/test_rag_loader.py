@@ -25,15 +25,22 @@ def _source(content_path: str) -> dict[str, str]:
 def test_load_corpus_loads_example_manifest() -> None:
     corpus = load_corpus(Path("corpus/sources.example.json"))
 
-    assert len(corpus.documents) == 3
+    assert len(corpus.documents) == 4
     assert corpus.documents[0].source_id == "boe-estatuto-trabajadores"
     assert "Estatuto de los Trabajadores" in corpus.documents[0].text
+    trabajo_distancia = next(
+        document
+        for document in corpus.documents
+        if document.source_id == "boe-ley-trabajo-distancia"
+    )
+    assert "Ley 10/2021" in trabajo_distancia.text
+    assert "trabajo a distancia" in trabajo_distancia.text.lower()
 
 
 def test_ingest_corpus_manifest_returns_chunk_count() -> None:
     chunk_count = ingest_corpus_manifest("corpus/sources.example.json")
 
-    assert chunk_count == 3
+    assert chunk_count > 4
 
 
 def test_load_corpus_rejects_missing_content_path(tmp_path: Path) -> None:

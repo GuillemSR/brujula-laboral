@@ -60,3 +60,20 @@ def test_chunk_document_uses_full_document_when_no_section_is_found() -> None:
 
     assert len(chunks) == 1
     assert chunks[0].section == "documento-completo"
+
+
+def test_chunk_document_truncates_long_section_labels() -> None:
+    source = _metadata()
+    long_heading = "## " + "Apartado muy largo " * 20
+    document = SourceDocument(
+        source_id="fuente-test",
+        title="Fuente test",
+        text=f"{long_heading}\nContenido.",
+        metadata=source,
+    )
+
+    chunk = chunk_document(document)[0]
+
+    assert len(chunk.section) <= 200
+    assert chunk.section.endswith("...")
+    assert chunk.metadata.section == chunk.section

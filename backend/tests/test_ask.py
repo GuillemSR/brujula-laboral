@@ -1,7 +1,13 @@
 from fastapi.testclient import TestClient
 
+import json
+
 import app.api.routes as routes
-from app.api.routes import get_answer_generator, get_temporary_storage_factory
+from app.api.routes import (
+    get_answer_generator,
+    get_streaming_answer_generator,
+    get_temporary_storage_factory,
+)
 from app.ai.bedrock_client import ModelResponse
 from app.core.config import Settings
 from app.main import create_app
@@ -49,7 +55,7 @@ def test_ask_returns_cited_local_rag_response() -> None:
 def test_ask_without_relevant_public_sources_still_answers() -> None:
     client = build_client()
 
-    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+    response = client.post("/ask", json={"question": "criptomonedas saturno"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -69,12 +75,56 @@ def test_ask_uses_model_generator_when_available() -> None:
     )
     client = TestClient(app)
 
-    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+    response = client.post("/ask", json={"question": "criptomonedas saturno"})
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["answer"] == "Respuesta generada por modelo."
     assert payload["sources"] == []
+
+
+def test_ask_stream_returns_meta_and_chunks() -> None:
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    app.dependency_overrides[get_streaming_answer_generator] = lambda: (
+        lambda _prompt, _system_prompt: iter(["Respuesta ", "streaming."])
+    )
+    client = TestClient(app)
+
+    response = client.post("/ask/stream", json={"question": "registro de jornada"})
+
+    assert response.status_code == 200
+    assert "application/x-ndjson" in response.headers["content-type"]
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert events[0]["type"] == "meta"
+    assert events[0]["sources"]
+    assert events[1] == {"type": "chunk", "text": "Respuesta "}
+    assert events[2] == {"type": "chunk", "text": "streaming."}
+    assert events[-1] == {"type": "done"}
+
+
+def test_ask_stream_falls_back_to_local_answer_without_stream_generator() -> None:
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    app.dependency_overrides[get_streaming_answer_generator] = lambda: None
+    client = TestClient(app)
+
+    response = client.post("/ask/stream", json={"question": "criptomonedas saturno"})
+
+    assert response.status_code == 200
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert events[0] == {
+        "type": "meta",
+        "sources": [],
+        "limitations": [
+            "Respuesta orientativa.",
+            "Las fuentes del corpus se muestran solo cuando hay coincidencias relevantes.",
+            "No debe usarse como asesoramiento legal.",
+        ],
+    }
+    assert events[1]["type"] == "chunk"
+    assert "orientacion general" in events[1]["text"]
+    assert events[-1] == {"type": "done"}
 
 
 def test_ask_uses_mock_provider_when_configured(monkeypatch) -> None:
@@ -108,12 +158,41 @@ def test_ask_mock_provider_without_sources_does_not_add_fake_citation(monkeypatc
     app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
     client = TestClient(app)
 
-    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+    response = client.post("/ask", json={"question": "criptomonedas saturno"})
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["answer"].startswith("Respuesta mock local:")
     assert "[1]" not in payload["answer"]
+    assert payload["sources"] == []
+
+
+def test_ask_uses_ollama_provider_when_configured(monkeypatch) -> None:
+    class FakeOllamaClient:
+        def __init__(self, settings: Settings) -> None:
+            self.settings = settings
+
+        def generate(self, _prompt: str, _system_prompt: str) -> ModelResponse:
+            return ModelResponse(
+                text="Respuesta desde Ollama.", model_id=self.settings.ollama_model_id
+            )
+
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(ai_provider="ollama", ollama_model_id="qwen2.5:1.5b"),
+    )
+    monkeypatch.setattr(routes, "OllamaClient", FakeOllamaClient)
+
+    app = create_app()
+    app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
+    client = TestClient(app)
+
+    response = client.post("/ask", json={"question": "criptomonedas saturno"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"] == "Respuesta desde Ollama."
     assert payload["sources"] == []
 
 
@@ -127,7 +206,7 @@ def test_bedrock_provider_without_model_id_uses_local_fallback(monkeypatch) -> N
     app.dependency_overrides[get_temporary_storage_factory] = lambda: lambda: FakeTemporaryStorage()
     client = TestClient(app)
 
-    response = client.post("/ask", json={"question": "Me pueden despedir estando de baja?"})
+    response = client.post("/ask", json={"question": "criptomonedas saturno"})
 
     assert response.status_code == 200
     payload = response.json()

@@ -7,7 +7,7 @@ Empezar con RAG propio, pequeno y controlado. Evaluar Bedrock Knowledge Bases ma
 ## Flujo
 
 ```text
-fuentes publicas -> chunks -> embeddings -> vector store -> retrieval -> prompt con citas -> Bedrock
+fuentes publicas -> chunks -> embeddings -> vector store -> retrieval -> prompt con citas -> generador
 ```
 
 ## Generacion de respuestas
@@ -30,6 +30,12 @@ Comportamiento esperado:
   largo y estructurado para revisar la interfaz con varios parrafos, lista de
   acciones y marcadores de cita. Solo usa marcadores como `[1]` cuando proceden
   de fuentes RAG recuperadas; no inventa citas si el prompt no trae evidencia.
+- Si `AI_PROVIDER=ollama`, se llama a Ollama local mediante
+  `OLLAMA_BASE_URL` y `OLLAMA_MODEL_ID`. Es una integracion temporal de
+  desarrollo para probar el flujo generativo sin acceso a Bedrock; debe
+  mantenerse separada del adaptador AWS para poder retirarla sin tocar RAG.
+  La web local puede consumir `POST /ask/stream`, que envia metadatos y chunks
+  de texto en NDJSON.
 - La respuesta no debe inventar fuentes, articulos o sentencias. Solo se citan
   fuentes que existan en el corpus recuperado.
 

@@ -55,5 +55,24 @@
     "language": "es",
     "content_path": "markdown/convenio-comercio-barcelona-pendiente.md",
     "notes": "Ejemplo pendiente: confirmar convenio aplicable, boletin oficial y vigencia."
+  },
+  {
+    "source_id": "boe-ley-trabajo-distancia",
+    "title": "Ley 10/2021, de trabajo a distancia",
+    "source_type": "legislation",
+    "source_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2021-11472",
+    "publisher": "BOE",
+    "jurisdiction": "Espana",
+    "territory": "estatal",
+    "sector": "general",
+    "legal_rank": "law",
+    "published_at": "2021-07-10",
+    "updated_at": null,
+    "valid_from": "2021-07-11",
+    "valid_to": null,
+    "status": "active",
+    "language": "es",
+    "content_path": "markdown/boe-ley-trabajo-distancia.md",
+    "notes": "Fuente oficial descargada del BOE para probar recuperacion RAG con consultas sobre trabajo a distancia."
   }
 ]

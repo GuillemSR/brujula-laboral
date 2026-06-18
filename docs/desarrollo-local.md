@@ -58,6 +58,34 @@ http://127.0.0.1:8000/
 Los assets de desarrollo se sirven desde `/static/*`. La interfaz usa rutas
 relativas para llamar a `POST /ask`, `POST /documents` y
 `DELETE /documents/{document_id}` desde el mismo origen local.
+El placeholder usa `POST /ask/stream` para pintar la respuesta por fragmentos;
+`POST /ask` se mantiene como endpoint no streaming.
+
+## Prueba local temporal con Ollama
+
+Mientras no haya acceso operativo a Bedrock, se puede usar la aplicacion local
+de Ollama. Esta integracion es temporal y esta pensada solo para desarrollo:
+no llama a AWS, no anade servicios gestionados y se retira cambiando
+`AI_PROVIDER` o eliminando `app.ai.ollama_client`.
+Cuando se usa desde la web local, la respuesta se consume en streaming mediante
+NDJSON para poder ver el texto aparecer progresivamente.
+
+Configuracion recomendada para el `.env` local:
+
+```env
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL_ID=qwen2.5:1.5b
+OLLAMA_TIMEOUT_SECONDS=120
+TEMP_DOCUMENT_STORAGE=memory
+RAG_VECTOR_BACKEND=local
+```
+
+Comprobar que Ollama esta arrancado:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:11434/api/tags
+```
 
 ## Prueba local con mock de Bedrock
 
