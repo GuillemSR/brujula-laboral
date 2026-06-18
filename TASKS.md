@@ -54,8 +54,8 @@
 - [x] Definir y documentar un plan de pruebas intensivas del producto: codigo, API, RAG, privacidad, documentos, web desktop/movil y casos limite.
 - [x] Ejecutar pruebas automatizadas locales: formato, lint, tests de backend y cualquier evaluacion RAG disponible.
 - [x] Probar la web con navegador integrado: chat, fuentes, errores, subida/borrado de documentos, estados de carga y experiencia responsive.
-- [ ] Documentar las pruebas que no pueda ejecutar Codex con herramientas automaticas y pedir al usuario que las haga manualmente.
-- [ ] Corregir o registrar los fallos encontrados durante las pruebas intensivas.
+- [x] Documentar las pruebas que no pueda ejecutar Codex con herramientas automaticas y pedir al usuario que las haga manualmente.
+- [x] Corregir o registrar los fallos encontrados durante las pruebas intensivas.
 - [ ] Elegir y documentar el runtime inicial para desplegar el monolito en AWS sin abrir beta publica: Lambda/API Gateway, App Runner o ECS/Fargate.
 - [ ] Desplegar backend y web en AWS para pruebas privadas con IAM minimo, variables configuradas, Bedrock, S3 temporal y politica de logs sin contenido sensible.
 - [ ] Validar el despliegue AWS: `/health`, web, `/ask`, documentos temporales, borrado, Bedrock, costes y CloudWatch Logs sin prompts, respuestas ni documentos.
