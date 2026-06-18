@@ -1,6 +1,7 @@
 import json
 from collections.abc import Iterator
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Callable
 
@@ -11,12 +12,13 @@ from starlette.responses import StreamingResponse
 from app.ai.bedrock_client import BedrockClient, ModelResponse
 from app.ai.mock_bedrock import MockBedrockRuntimeClient
 from app.ai.ollama_client import OllamaClient
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.documents.extraction import DocumentExtractionError, extract_text
 from app.documents.temporary_context import build_temporary_context
 from app.documents.uploads import DocumentUploadError, validate_upload
 from app.rag.answering import SYSTEM_PROMPT, build_answer_context, build_cited_answer
 from app.rag.retrieval import RetrievalResult, build_local_retriever
+from app.storage.local import InMemoryTemporaryDocumentStorage
 from app.storage.s3_temporary import S3TemporaryStorage
 
 router = APIRouter()
@@ -77,21 +79,47 @@ class AnswerInputs:
     results: list[RetrievalResult]
 
 
-def get_temporary_storage() -> S3TemporaryStorage:
+TemporaryStorage = S3TemporaryStorage | InMemoryTemporaryDocumentStorage
+
+
+@lru_cache
+def get_local_temporary_storage(temp_document_ttl_minutes: int) -> InMemoryTemporaryDocumentStorage:
+    return InMemoryTemporaryDocumentStorage(
+        settings=Settings(temp_document_ttl_minutes=temp_document_ttl_minutes)
+    )
+
+
+def get_temporary_storage() -> TemporaryStorage:
+    settings = get_settings()
+    if _should_use_local_temporary_storage(settings):
+        return get_local_temporary_storage(settings.temp_document_ttl_minutes)
+
     try:
         return S3TemporaryStorage()
     except Exception as exc:
         raise HTTPException(status_code=503, detail=TEMPORARY_STORAGE_UNAVAILABLE_DETAIL) from exc
 
 
-def get_temporary_storage_factory() -> Callable[[], S3TemporaryStorage]:
-    def build_storage() -> S3TemporaryStorage:
+def get_temporary_storage_factory() -> Callable[[], TemporaryStorage]:
+    def build_storage() -> TemporaryStorage:
+        settings = get_settings()
+        if _should_use_local_temporary_storage(settings):
+            return get_local_temporary_storage(settings.temp_document_ttl_minutes)
+
         try:
             return S3TemporaryStorage()
         except Exception as exc:
             raise RuntimeError("Temporary storage unavailable") from exc
 
     return build_storage
+
+
+def _should_use_local_temporary_storage(settings: Settings) -> bool:
+    if settings.temp_document_storage == "memory":
+        return True
+    if settings.temp_document_storage == "s3":
+        return False
+    return settings.ai_provider == "ollama" or not settings.s3_temp_bucket
 
 
 def get_answer_generator() -> Callable[[str, str], ModelResponse] | None:
@@ -124,7 +152,7 @@ def get_streaming_answer_generator() -> Callable[[str, str], Iterator[str]] | No
 
 def _build_answer_inputs(
     request: AskRequest,
-    storage_factory: Callable[[], S3TemporaryStorage],
+    storage_factory: Callable[[], TemporaryStorage],
 ) -> AnswerInputs:
     settings = get_settings()
     search_query = request.question
@@ -186,7 +214,7 @@ def health() -> dict[str, str]:
 @router.post("/documents", response_model=DocumentUploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    storage: S3TemporaryStorage = Depends(get_temporary_storage),
+    storage: TemporaryStorage = Depends(get_temporary_storage),
 ) -> DocumentUploadResponse:
     settings = get_settings()
     content = await file.read()
@@ -214,7 +242,7 @@ async def upload_document(
 @router.delete("/documents/{document_id}", response_model=DocumentDeleteResponse)
 def delete_document(
     document_id: str,
-    storage: S3TemporaryStorage = Depends(get_temporary_storage),
+    storage: TemporaryStorage = Depends(get_temporary_storage),
 ) -> DocumentDeleteResponse:
     try:
         storage.delete_document(document_id)
@@ -229,7 +257,7 @@ def delete_document(
 @router.post("/query", response_model=AskResponse)
 def ask(
     request: AskRequest,
-    storage_factory: Callable[[], S3TemporaryStorage] = Depends(get_temporary_storage_factory),
+    storage_factory: Callable[[], TemporaryStorage] = Depends(get_temporary_storage_factory),
     answer_generator: Callable[[str, str], ModelResponse] | None = Depends(get_answer_generator),
 ) -> AskResponse:
     answer_inputs = _build_answer_inputs(request, storage_factory)
@@ -259,7 +287,7 @@ def ask(
 @router.post("/ask/stream")
 def ask_stream(
     request: AskRequest,
-    storage_factory: Callable[[], S3TemporaryStorage] = Depends(get_temporary_storage_factory),
+    storage_factory: Callable[[], TemporaryStorage] = Depends(get_temporary_storage_factory),
     stream_answer: Callable[[str, str], Iterator[str]] | None = Depends(
         get_streaming_answer_generator
     ),

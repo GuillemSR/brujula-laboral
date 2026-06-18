@@ -3,7 +3,8 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from app.api.routes import get_temporary_storage
+from app.api.routes import get_answer_generator, get_temporary_storage
+from app.core.config import Settings
 from app.main import create_app
 from app.storage.s3_temporary import StoredTemporaryDocument
 
@@ -139,3 +140,60 @@ def test_delete_document_deletes_temporary_object() -> None:
     assert response.status_code == 200
     assert response.json() == {"deleted": True}
     assert storage.deleted == [document_id]
+
+
+def test_local_document_flow_works_without_s3_bucket(monkeypatch) -> None:
+    import app.api.routes as routes
+
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(s3_temp_bucket=None, rag_min_score=0.2),
+    )
+    routes.get_local_temporary_storage.cache_clear()
+    try:
+        app = create_app()
+        app.dependency_overrides[get_answer_generator] = lambda: None
+        client = TestClient(app)
+
+        upload_response = client.post(
+            "/documents",
+            files={"file": ("nota.txt", b"registro de jornada privado", "text/plain")},
+        )
+
+        assert upload_response.status_code == 200
+        document_id = upload_response.json()["document_id"]
+
+        ask_response = client.post(
+            "/ask",
+            json={"question": "Que derechos tengo?", "document_id": document_id},
+        )
+
+        assert ask_response.status_code == 200
+        assert any(
+            "Documento privado temporal extraido solo en memoria" in limitation
+            for limitation in ask_response.json()["limitations"]
+        )
+    finally:
+        routes.get_local_temporary_storage.cache_clear()
+
+
+def test_ollama_local_document_flow_uses_memory_even_with_s3_bucket(monkeypatch) -> None:
+    import app.api.routes as routes
+
+    monkeypatch.setattr(
+        routes,
+        "get_settings",
+        lambda: Settings(
+            ai_provider="ollama",
+            s3_temp_bucket="bucket-configurado",
+            temp_document_storage="auto",
+        ),
+    )
+    routes.get_local_temporary_storage.cache_clear()
+    try:
+        storage = routes.get_temporary_storage()
+
+        assert storage.__class__.__name__ == "InMemoryTemporaryDocumentStorage"
+    finally:
+        routes.get_local_temporary_storage.cache_clear()

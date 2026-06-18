@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     store_user_prompts: bool = False
     store_model_responses: bool = False
     store_private_documents: bool = False
+    temp_document_storage: Literal["auto", "memory", "s3"] = "auto"
     temp_document_ttl_minutes: int = 30
     temp_document_max_bytes: int = 5 * 1024 * 1024
 
