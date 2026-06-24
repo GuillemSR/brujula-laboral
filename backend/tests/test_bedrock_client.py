@@ -43,6 +43,49 @@ def test_bedrock_client_uses_converse_api() -> None:
     assert runtime.calls[0]["system"] == [{"text": "Sistema"}]
 
 
+def test_bedrock_client_uses_dedicated_bedrock_region(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_boto3_client(service_name: str, **kwargs: object) -> FakeBedrockRuntimeClient:
+        captured["service_name"] = service_name
+        captured.update(kwargs)
+        return FakeBedrockRuntimeClient()
+
+    monkeypatch.setattr("app.ai.bedrock_client.boto3.client", fake_boto3_client)
+
+    BedrockClient(
+        settings=Settings(
+            aws_region="eu-south-2",
+            bedrock_region="eu-west-3",
+            bedrock_model_id="eu.amazon.nova-micro-v1:0",
+        )
+    )
+
+    assert captured["service_name"] == "bedrock-runtime"
+    assert captured["region_name"] == "eu-west-3"
+
+
+def test_bedrock_client_falls_back_to_aws_region(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_boto3_client(service_name: str, **kwargs: object) -> FakeBedrockRuntimeClient:
+        captured["service_name"] = service_name
+        captured.update(kwargs)
+        return FakeBedrockRuntimeClient()
+
+    monkeypatch.setattr("app.ai.bedrock_client.boto3.client", fake_boto3_client)
+
+    BedrockClient(
+        settings=Settings(
+            aws_region="eu-south-2",
+            bedrock_region=None,
+            bedrock_model_id="eu.amazon.nova-micro-v1:0",
+        )
+    )
+
+    assert captured["region_name"] == "eu-south-2"
+
+
 def test_mock_bedrock_runtime_returns_converse_shape_with_usage() -> None:
     runtime = MockBedrockRuntimeClient()
 

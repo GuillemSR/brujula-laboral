@@ -28,7 +28,7 @@ class BedrockClient:
         self.settings = settings or get_settings()
         self.client = client or boto3.client(
             "bedrock-runtime",
-            region_name=self.settings.aws_region,
+            region_name=self.settings.bedrock_region or self.settings.aws_region,
             config=Config(
                 connect_timeout=10,
                 read_timeout=60,

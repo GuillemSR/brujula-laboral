@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     ai_provider: Literal["bedrock", "mock", "ollama"] = "bedrock"
     aws_region: str = "eu-south-2"
+    bedrock_region: str | None = None
     bedrock_model_id: str | None = None
     bedrock_embedding_model_id: str | None = None
     ollama_base_url: str = "http://127.0.0.1:11434"

@@ -7,7 +7,8 @@ Asistente laboral y sindical basado en IA, orientado a facilitar el acceso a inf
 - Proyecto personal y pequeno, con arquitectura simple.
 - Backend Python/FastAPI como monolito modular.
 - RAG propio inicial para fuentes publicas laborales y sindicales.
-- AWS Bedrock como proveedor de modelos gestionados, con Ollama local solo como alternativa temporal de desarrollo.
+- AWS Bedrock como proveedor de modelos gestionados, con mock y Ollama como
+  alternativas locales.
 - Documentos privados tratados de forma efimera y fuera del indice RAG.
 - Configuracion AWS manual al inicio, documentada en el repositorio.
 
@@ -15,7 +16,7 @@ Asistente laboral y sindical basado en IA, orientado a facilitar el acceso a inf
 
 ```text
 backend/   API, RAG, Bedrock, documentos, almacenamiento y privacidad
-web/       Placeholder estatico temporal para probar la funcionalidad
+web/       Interfaz web estatica servida por FastAPI
 corpus/    Fuentes publicas y manifiestos de ingesta
 evals/     Preguntas y criterios de evaluacion
 docs/      Arquitectura, AWS, privacidad y notas tecnicas
@@ -27,6 +28,8 @@ El análisis inicial del producto y la arquitectura está versionado en `docs/an
 ## Arranque local previsto
 
 Los comandos de desarrollo, pruebas y lint estan definidos en `docs/desarrollo-local.md`.
+Los modelos y regiones de Bedrock verificados se documentan en
+`docs/modelos-bedrock.md`.
 
 ```powershell
 python -m venv .venv

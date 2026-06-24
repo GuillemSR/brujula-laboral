@@ -68,8 +68,7 @@ TEMP_DOCUMENT_STORAGE=memory
 
 ### Ollama Local Temporal
 
-Uso: validar experiencia generativa y streaming mientras Bedrock no este
-disponible.
+Uso: validar experiencia generativa y streaming sin consumir Bedrock.
 
 ```env
 AI_PROVIDER=ollama
@@ -94,6 +93,7 @@ ninguna beta.
 ```env
 AI_PROVIDER=bedrock
 AWS_REGION=eu-south-2
+BEDROCK_REGION=eu-west-3
 BEDROCK_MODEL_ID=eu.amazon.nova-micro-v1:0
 S3_TEMP_BUCKET=<bucket-temporal>
 RAG_VECTOR_BACKEND=local
@@ -233,7 +233,7 @@ despliegue debe aplicar una politica equivalente o saneada para rutas con
 
 Antes de desplegar:
 
-- confirmar region `eu-south-2`;
+- confirmar recursos generales en `eu-south-2` y Bedrock en `eu-west-3`;
 - confirmar modelos Bedrock habilitados;
 - confirmar bucket temporal con bloqueo publico, cifrado y lifecycle;
 - confirmar budget y alarmas de coste;

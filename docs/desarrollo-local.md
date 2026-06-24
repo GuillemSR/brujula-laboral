@@ -61,10 +61,10 @@ relativas para llamar a `POST /ask`, `POST /documents` y
 El placeholder usa `POST /ask/stream` para pintar la respuesta por fragmentos;
 `POST /ask` se mantiene como endpoint no streaming.
 
-## Prueba local temporal con Ollama
+## Prueba local opcional con Ollama
 
-Mientras no haya acceso operativo a Bedrock, se puede usar la aplicacion local
-de Ollama. Esta integracion es temporal y esta pensada solo para desarrollo:
+Para trabajar sin AWS, se puede usar la aplicacion local de Ollama. Esta
+integracion es opcional y esta pensada solo para desarrollo:
 no llama a AWS, no anade servicios gestionados y se retira cambiando
 `AI_PROVIDER` o eliminando `app.ai.ollama_client`.
 Cuando se usa desde la web local, la respuesta se consume en streaming mediante
@@ -89,7 +89,7 @@ Invoke-RestMethod http://127.0.0.1:11434/api/tags
 
 ## Prueba local con mock de Bedrock
 
-Para trabajar sin cuota activa de Bedrock, activar el proveedor mock. El mock no
+Para tests deterministas o trabajo sin AWS, activar el proveedor mock. El mock no
 llama a AWS y devuelve una respuesta con la misma forma basica de la API
 `Converse` de Bedrock. La respuesta local incluye varios parrafos, una lista de
 acciones y, cuando el RAG local recupera fuentes, marcadores como `[1]` para
@@ -112,6 +112,7 @@ backend local contra el bucket temporal de S3 ya creado:
 ```env
 AI_PROVIDER=bedrock
 AWS_REGION=eu-south-2
+BEDROCK_REGION=eu-west-3
 BEDROCK_MODEL_ID=eu.amazon.nova-micro-v1:0
 S3_TEMP_BUCKET=<bucket-temporal>
 ```
@@ -119,7 +120,7 @@ S3_TEMP_BUCKET=<bucket-temporal>
 La terminal debe tener credenciales AWS validas:
 
 ```powershell
-aws sts get-caller-identity --region eu-south-2
+aws sts get-caller-identity
 ```
 
 Despues arrancar la app con `.\scripts\dev.ps1` y abrir
@@ -129,11 +130,16 @@ preguntar con el documento activo y quitarlo para disparar
 personales en pruebas de desarrollo salvo que se haya revisado antes la
 politica de logs y borrado.
 
-Si `BEDROCK_MODEL_ID` no esta configurado, o si Bedrock devuelve un error
-temporal como limite diario de tokens, la API mantiene la experiencia con una
-respuesta orientativa local. Para probar la experiencia generativa sin depender
-de cuota, usar `AI_PROVIDER=mock`. La generacion real en AWS debe validarse
-cuando haya cuota disponible.
+`AWS_REGION` conserva la region del bucket S3. `BEDROCK_REGION` controla solo el
+cliente de Bedrock Runtime. El perfil `eu.*` mantiene el procesamiento dentro de
+la geografia europea, aunque puede enrutar entre varias regiones de la UE.
+
+Si `BEDROCK_MODEL_ID` no esta configurado o Bedrock devuelve un error temporal,
+la API mantiene la experiencia con una respuesta orientativa local. Para pruebas
+deterministas y sin coste, usar `AI_PROVIDER=mock`.
+
+Los modelos y precios verificados se documentan en
+`docs/modelos-bedrock.md`.
 
 ## Pruebas
 

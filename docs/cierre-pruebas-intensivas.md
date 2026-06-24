@@ -82,23 +82,30 @@ Accion manual solicitada al usuario:
 
 ### Pruebas Con Bedrock Real
 
-La prueba web reciente uso `AI_PROVIDER=mock` para no depender de cuota ni de
-AWS. La validacion real con Bedrock queda para las tareas de despliegue AWS
-privado.
+Estado actualizado el 2026-06-24: Bedrock Runtime se valido con invocaciones
+sinteticas minimas. Nova Micro, Nova Lite y Nova Pro funcionan desde
+`eu-west-3`; Nova Micro sigue bloqueado cuando la llamada se inicia en
+`eu-south-2`. La configuracion de desarrollo usa Nova Micro por coste minimo.
 
-Accion manual o posterior solicitada:
+Sigue pendiente para el despliegue privado:
 
-- validar Bedrock en `eu-south-2` durante la fase de despliegue;
-- comprobar latencia, coste, errores de cuota y calidad de salida;
-- revisar CloudWatch despues de invocar el modelo real.
+- comprobar latencia y calidad con el flujo completo de la aplicacion;
+- revisar CloudWatch despues de invocar el modelo desplegado;
+- medir coste y cuotas bajo una carga de prueba controlada.
 
 ### Pruebas Con S3 Temporal Real Desde La Web
 
-La prueba web local uso `TEMP_DOCUMENT_STORAGE=memory`. El flujo S3 temporal ya
-tiene tests y validacion AWS previa, pero falta probarlo integrado en un
-despliegue privado.
+Estado actualizado el 2026-06-24: se ejecuto el flujo integrado local contra
+AWS con un documento sintetico:
 
-Accion manual o posterior solicitada:
+- `GET /health`: 200;
+- `POST /documents`: 200 y almacenamiento temporal en S3;
+- `POST /ask`: 200 usando Bedrock Runtime real;
+- `DELETE /documents/{document_id}`: 200;
+- prefijo `temporary-documents/` vacio al terminar.
+
+No se registraron el texto sintetico ni la respuesta. Sigue pendiente repetirlo
+en el despliegue privado y verificar CloudWatch:
 
 - subir un `.txt` o `.md` sintetico en el entorno AWS privado;
 - preguntar con el documento activo;
@@ -189,7 +196,8 @@ comprobaciones manuales:
 - revisar cualitativamente varias respuestas laborales importantes;
 - no usar documentos reales hasta validar logs y borrado en AWS;
 - preparar una revision legal/RGPD antes de cualquier exposicion a terceros;
-- durante el despliegue AWS privado, repetir las pruebas con Bedrock y S3 reales.
+- durante el despliegue AWS privado, repetir las pruebas integradas con Bedrock
+  y S3 reales.
 
 ## Conclusion
 

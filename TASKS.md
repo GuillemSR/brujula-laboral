@@ -56,6 +56,7 @@
 - [x] Probar la web con navegador integrado: chat, fuentes, errores, subida/borrado de documentos, estados de carga y experiencia responsive.
 - [x] Documentar las pruebas que no pueda ejecutar Codex con herramientas automaticas y pedir al usuario que las haga manualmente.
 - [x] Corregir o registrar los fallos encontrados durante las pruebas intensivas.
+- [x] Validar Bedrock Runtime real y configurar Nova Micro economico para desarrollo.
 - [ ] Elegir y documentar el runtime inicial para desplegar el monolito en AWS sin abrir beta publica: Lambda/API Gateway, App Runner o ECS/Fargate.
 - [ ] Desplegar backend y web en AWS para pruebas privadas con IAM minimo, variables configuradas, Bedrock, S3 temporal y politica de logs sin contenido sensible.
 - [ ] Validar el despliegue AWS: `/health`, web, `/ask`, documentos temporales, borrado, Bedrock, costes y CloudWatch Logs sin prompts, respuestas ni documentos.

@@ -10,6 +10,18 @@ Configuracion inicial prevista para un proyecto personal.
 - No guardar contenido sensible en logs.
 - No subir credenciales al repositorio.
 
+## Estado operativo actual, 2026-06-24
+
+- Recursos generales y bucket temporal: `eu-south-2` (Espana).
+- Entrada de Bedrock Runtime: `eu-west-3` (Paris).
+- Perfil de desarrollo: `eu.amazon.nova-micro-v1:0`.
+- Motivo de la separacion: la cuenta tiene acceso operativo a Bedrock desde
+  Paris, mientras las invocaciones iniciadas en Espana siguen devolviendo
+  `Too many tokens per day`.
+- El perfil `eu.*` puede enrutar dentro de la geografia europea. No garantiza
+  procesamiento exclusivo en Paris ni en Espana.
+- Configuracion y modelos probados: `docs/modelos-bedrock.md`.
+
 ## Region
 
 Comparar antes de fijar:
@@ -38,10 +50,9 @@ en consola antes de crear recursos reales o habilitar modelos.
 | `eu-west-1` Irlanda | Region europea madura y operativamente simple. | Mejor cobertura practica para candidatos de bajo coste: Mistral Large, Ministral 14B/8B/3B, Mixtral, `gpt-oss-20b`, `gpt-oss-120b`, Amazon Nova y Titan Text Embeddings V2. | S3, KMS, CloudWatch y servicios base disponibles. | Buen fallback si `eu-south-2` no ofrece el modelo objetivo o tiene limitaciones de quota. Residencia sigue en UE, pero no en Espana. |
 | `eu-central-1` Frankfurt | Region europea madura con buena postura de residencia UE. | Soporta Amazon Nova, Titan Text Embeddings V2, Claude 3.5 Sonnet, `gpt-oss-20b` y `gpt-oss-120b`. La cobertura Mistral revisada es mas limitada que Irlanda para los candidatos economicos iniciales. | S3, KMS, CloudWatch y servicios base disponibles. | Alternativa razonable si se prioriza Frankfurt o si el modelo elegido esta disponible alli. |
 
-Decision: usar `eu-south-2` como region principal del proyecto por residencia de
-datos y porque no penaliza costes base frente a Irlanda. `eu-west-1` queda como
-fallback operativo para pruebas de Bedrock si algun modelo candidato no esta
-disponible en Espana.
+Decision actual: mantener `eu-south-2` como region principal de recursos y
+almacenamiento, y usar temporalmente `eu-west-3` como region de entrada de
+Bedrock. `BEDROCK_REGION` permite separar ambos destinos sin mover el bucket.
 Evitar perfiles Global Cross-Region para consultas con datos privados; si se usa
 Cross-Region, preferir perfiles EU/Geo y documentar que prompts y respuestas
 pueden procesarse dentro de la geografia europea, no necesariamente en una sola
@@ -53,6 +64,10 @@ Costes revisados con AWS Price List API via AWS MCP. Cifras en USD, sin impuesto
 y sujetas a cambios. Para el MVP, los costes que mas afectan a la decision son
 Bedrock/modelos y posibles endpoints privados; S3, KMS, Lambda y logs son
 secundarios a bajo volumen.
+
+Esta tabla se conserva como fotografia historica de la comparativa regional. La
+configuracion vigente y los precios actuales de los modelos usados se mantienen
+en `docs/modelos-bedrock.md`.
 
 | Servicio / concepto | `eu-west-1` Irlanda | `eu-south-2` Espana | `eu-central-1` Frankfurt | Lectura |
 | --- | ---: | ---: | ---: | --- |
@@ -75,12 +90,9 @@ Bedrock, precios observados de modelos candidatos:
 | Mistral Ministral 3B | 0.000120 input / 0.000120 output por 1k tokens | No encontrado en precios/modelos revisados | 0.000120 input / 0.000120 output por 1k tokens | Irlanda/Frankfurt dan mas variedad barata. |
 | OpenAI gpt-oss-20b | 0.000080 input / 0.000350 output por 1k tokens | No encontrado en precios/modelos revisados | 0.000090 input / 0.000400 output por 1k tokens | Irlanda es mas barata y con mas cobertura. |
 
-Conclusion de coste: `eu-south-2` es la mejor region objetivo si se quiere
-residencia en Espana y se acepta empezar con Amazon Nova. `eu-west-1` es la mejor
-region temporal/de fallback si se prioriza variedad de modelos economicos
-Bedrock desde el primer dia. `eu-central-1` no aporta ventaja clara para este
-proyecto: suele ser algo mas cara y no mejora la residencia frente a Espana ni la
-variedad frente a Irlanda.
+Conclusion historica: `eu-south-2` era la region objetivo por residencia. La
+cuota efectiva de la cuenta obliga actualmente a iniciar Bedrock desde
+`eu-west-3`; los demas recursos permanecen en Espana.
 
 Fuentes oficiales revisadas:
 
@@ -147,8 +159,7 @@ Evidencia AWS MCP:
 
 ## Modelos Bedrock candidatos
 
-Seleccion inicial para pruebas de bajo coste, validada el 2026-06-09 con AWS
-MCP en `eu-south-2`:
+Seleccion inicial para pruebas de bajo coste:
 
 - Generacion por defecto: Amazon Nova Micro, perfil de inferencia
   `eu.amazon.nova-micro-v1:0`.
@@ -157,28 +168,21 @@ MCP en `eu-south-2`:
 - Embeddings: Amazon Titan Text Embeddings V2, modelo
   `amazon.titan-embed-text-v2:0`.
 
-Nova Micro y Nova Lite aparecen en `eu-south-2` como modelos con inferencia por
-perfil (`INFERENCE_PROFILE`), no como invocacion on-demand directa. Los perfiles
-EU estan activos e incluyen `eu-south-2` entre las regiones del perfil. Titan
-Text Embeddings V2 aparece como `ON_DEMAND`.
+Validacion real repetida el 2026-06-24:
 
-Evidencia AWS MCP:
+- `eu-west-3` permite invocar los perfiles EU de Nova Micro, Nova Lite y Nova
+  Pro.
+- Claude Haiku 4.5 y Claude Sonnet 4.5 tambien responden desde `eu-west-3`.
+- Claude Sonnet 4 original ya esta marcado como Legacy y no debe adoptarse.
+- `eu-south-2` sigue rechazando Nova Micro por cuota diaria de la cuenta, aunque
+  el perfil aparezca en el catalogo.
+- Nova Micro cuesta 0.052 USD por millon de tokens de entrada y 0.208 USD por
+  millon de tokens de salida en Paris segun AWS Price List API, con precio
+  efectivo desde el 2026-06-01.
 
-- `bedrock.ListFoundationModels` en `eu-south-2` devolvio
-  `amazon.nova-micro-v1:0`, `amazon.nova-lite-v1:0` y
-  `amazon.titan-embed-text-v2:0`.
-- `bedrock.ListInferenceProfiles` en `eu-south-2` devolvio los perfiles activos
-  `eu.amazon.nova-micro-v1:0` y `eu.amazon.nova-lite-v1:0`.
-- `bedrock-runtime.Converse` respondio correctamente con texto sintetico no
-  sensible para Nova Micro y Nova Lite.
-- `bedrock-runtime.InvokeModel` respondio correctamente para Titan Text
-  Embeddings V2 con un embedding de 256 dimensiones.
-
-Decision: usar Nova Micro para pruebas iniciales por coste minimo, mantener Nova
-Lite como alternativa barata si la calidad de Micro no alcanza, y no usar modelos
-Claude, Nova Pro, Mistral, Qwen ni `gpt-oss` hasta que haya benchmark o necesidad
-clara. `eu-west-1` sigue como fallback operativo si se necesita mas variedad de
-modelos baratos.
+Decision: usar Nova Micro desde `eu-west-3` durante el desarrollo. Nova Lite
+queda como fallback barato. La seleccion para produccion se decidira mediante el
+benchmark de Fase 6. Ver `docs/modelos-bedrock.md` para la matriz completa.
 
 ## Bucket temporal de documentos
 
